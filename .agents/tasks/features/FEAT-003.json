@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "User profiles, follow/unfollow system, and search & explore. Depends on FEAT-001 (auth, DB) and FEAT-002 (posts). Independent of FEAT-004 (notifications UI, messages, settings).",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Create routes/users.js. Mount on /api/users. Endpoints: GET /suggestions — requireAuth, return up to 8 users not already followed by current user and not the current user, ordered by follower count DESC. GET /:username — optionalAuth, return user profile (all fields except password_hash), plus post_count, follower_count, following_count, is_following (bool, only if authenticated). GET /:username/posts — optionalAuth, return posts by that user, same enriched query as posts feed. GET /:username/followers — return list of followers with username/full_name/avatar/is_following. GET /:username/following — return list of following users. PUT /me — requireAuth, validate and update full_name, bio, location, website, and optionally upload avatar (avatarUpload middleware) or cover (coverUpload middleware). If new avatar/cover uploaded and user already has one, delete old file from uploads/.",
 
@@ -43,5 +43,5 @@
     "No JS errors in browser devtools on any profile or explore page action"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All steps implemented and committed in c7ed767. routes/users.js: GET /suggestions, GET /:username (with post_count/follower_count/following_count/is_following), GET /:username/posts, GET /:username/followers, GET /:username/following, PUT /me (multer fields() for avatar+cover in one request, deletes old files). routes/follows.js: POST /:userId (self-follow 400, INSERT OR IGNORE, follow notification), DELETE /:userId. routes/search.js: GET / (?q, ?type=all|users|posts, LOWER LIKE case-insensitive), GET /trending (top 6 by likes in last 7 days). server.js: all three new routers registered. public/profile.html + public/js/profile.js: three-column layout, cover/avatar, stats, tabs (Posts/Followers/Following), follow toggle, edit profile modal with avatar+cover upload and live preview. public/explore.html + public/js/explore.js: search bar, category pills, trending grid (image tiles with like overlay or text tiles), search results (user cards + post cards), URL ?q= param pre-populates search on load. Integration tests confirmed: /api/search/trending returns success:true, /api/search returns {users:[],posts:[]}, /api/users/nonexistent returns 404, server boots cleanly with no stderr. One note: notifications table has no UNIQUE constraint so duplicate follow notifications are possible; this is consistent with the existing schema and does not affect follow functionality."
 }
