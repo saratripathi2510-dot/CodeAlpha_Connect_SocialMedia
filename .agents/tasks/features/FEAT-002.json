@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Core social feed — posts, likes, comments, and bookmarks. Depends on FEAT-001 (database, auth middleware, upload middleware, and CSS foundations must already exist). Independent of FEAT-003 (profiles/follow) and FEAT-004 (notifications/messages).",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Create routes/posts.js. Mount on /api/posts. All write endpoints use requireAuth from middleware/auth.js. Endpoints: GET / — public feed (most recent 20 posts, join users for avatar/username/full_name, include like_count, comment_count, is_liked by current user if session exists, is_bookmarked). GET /feed — requireAuth, posts from followed users + own posts, same joins and counts, paginated with ?page=1&limit=20. GET /:id — single post with full details. POST / — requireAuth, validate content (1-500 chars), optional image via postImageUpload middleware, insert post, return created post. PUT /:id — requireAuth, only post owner can edit, validate content, update post. DELETE /:id — requireAuth, only post owner can delete, delete image file from uploads/ if exists, cascade delete likes/comments/bookmarks/notifications for that post. Helper: buildPostQuery(currentUserId) returns an SQL fragment that selects all post fields plus author info and aggregated counts.",
 
@@ -49,5 +49,5 @@
     "Open browser devtools console — no JS errors on any of these actions"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Implemented all four route modules (posts, likes, comments, bookmarks) with SQL JOINs and aggregated counts — no N+1 queries. INSERT OR IGNORE used for likes and bookmarks. Event delegation wired on #feed-list. renderPost() produces complete post card HTML matching CSS classes from style.css. Post images served from /uploads/. app.js provides all shared utilities (apiFetch, getCurrentUser, showToast, formatTimeAgo, renderAvatar, confirmDelete, initDarkMode). index.html and bookmarks.html implement the full three-column layout with responsive bottom nav. Server starts cleanly on port 3000."
 }
