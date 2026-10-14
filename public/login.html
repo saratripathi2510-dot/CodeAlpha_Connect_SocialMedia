@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In — Connect</title>
+  <meta name="description" content="Log in to Connect. Good People. Better Conversations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/auth.css" />
+  <link rel="stylesheet" href="/css/responsive.css" />
+</head>
+<body>
+
+  <!-- Theme toggle -->
+  <button class="auth-theme-btn" id="themeToggle" aria-label="Toggle dark mode">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" id="themeIcon">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <span id="themeLabel">Dark mode</span>
+  </button>
+
+  <main class="auth-page">
+    <div class="auth-container">
+
+      <!-- Brand panel -->
+      <aside class="auth-brand" aria-label="Connect branding">
+        <div class="auth-brand-logo">
+          <div class="auth-brand-logo-mark" aria-hidden="true">C</div>
+          <span class="auth-brand-name">Connect</span>
+        </div>
+        <h1 class="auth-brand-tagline">Good People.<br>Better Conversations.</h1>
+        <p class="auth-brand-description">
+          Join a community built on genuine connection. Share your perspective, discover new ideas, and build meaningful relationships.
+        </p>
+        <ul class="auth-brand-features" role="list">
+          <li class="auth-feature-item">
+            <span class="feature-icon" aria-hidden="true">✦</span>
+            Share posts, photos, and stories
+          </li>
+          <li class="auth-feature-item">
+            <span class="feature-icon" aria-hidden="true">❤</span>
+            Like, comment, and bookmark content
+          </li>
+          <li class="auth-feature-item">
+            <span class="feature-icon" aria-hidden="true">◈</span>
+            Follow people you find interesting
+          </li>
+          <li class="auth-feature-item">
+            <span class="feature-icon" aria-hidden="true">✉</span>
+            Send private messages
+          </li>
+        </ul>
+      </aside>
+
+      <!-- Login card -->
+      <section class="auth-card" aria-labelledby="loginHeading">
+        <h2 class="auth-card-title" id="loginHeading">Welcome back</h2>
+        <p class="auth-card-subtitle">Log in to your Connect account</p>
+
+        <!-- Alert banner -->
+        <div class="auth-alert auth-alert-error" id="loginAlert" role="alert" aria-live="assertive"></div>
+
+        <form class="auth-form" id="loginForm" novalidate>
+
+          <div class="form-group">
+            <label class="form-label" for="loginEmail">Email address</label>
+            <input
+              type="email"
+              id="loginEmail"
+              name="email"
+              class="input"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+              aria-required="true"
+              aria-describedby="loginEmailError"
+            />
+            <span class="field-error" id="loginEmailError" role="alert"></span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="loginPassword">Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              name="password"
+              class="input"
+              placeholder="Your password"
+              autocomplete="current-password"
+              required
+              aria-required="true"
+              aria-describedby="loginPasswordError"
+            />
+            <span class="field-error" id="loginPasswordError" role="alert"></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary auth-submit-btn" id="loginSubmit">
+            <span id="loginBtnText">Log in</span>
+            <span class="spinner hidden" id="loginSpinner" aria-hidden="true"></span>
+          </button>
+
+        </form>
+
+        <div class="auth-divider">or</div>
+
+        <p class="auth-footer">
+          Don't have an account?
+          <a href="/register.html">Create one</a>
+        </p>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="/js/auth.js"></script>
+</body>
+</html>

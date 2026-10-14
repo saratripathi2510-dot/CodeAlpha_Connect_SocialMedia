@@ -1,0 +1,7 @@
+{
+  "task_id": "task-connect-social-media-platform",
+  "task_description": "Build a complete, fully functional social media web application named Connect. Node.js/Express REST API backend with SQLite, vanilla HTML/CSS/JS frontend. Features: auth, profiles, posts feed, likes, comments, bookmarks, follow system, search/explore, notifications, direct messages, settings, dark mode, responsive design.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}

@@ -1,0 +1,47 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "User profiles, follow/unfollow system, and search & explore. Depends on FEAT-001 (auth, DB) and FEAT-002 (posts). Independent of FEAT-004 (notifications UI, messages, settings).",
+  "status": "pending",
+  "steps": [
+    "Create routes/users.js. Mount on /api/users. Endpoints: GET /suggestions — requireAuth, return up to 8 users not already followed by current user and not the current user, ordered by follower count DESC. GET /:username — optionalAuth, return user profile (all fields except password_hash), plus post_count, follower_count, following_count, is_following (bool, only if authenticated). GET /:username/posts — optionalAuth, return posts by that user, same enriched query as posts feed. GET /:username/followers — return list of followers with username/full_name/avatar/is_following. GET /:username/following — return list of following users. PUT /me — requireAuth, validate and update full_name, bio, location, website, and optionally upload avatar (avatarUpload middleware) or cover (coverUpload middleware). If new avatar/cover uploaded and user already has one, delete old file from uploads/.",
+
+    "Create routes/follows.js (not listed in spec but needed). Mount on /api/follows. POST /:userId — requireAuth, prevent self-follow (return 400), INSERT OR IGNORE into follows, create notification (type='follow'), return { following: true, follower_count }. DELETE /:userId — requireAuth, delete from follows, return { following: false, follower_count }.",
+
+    "Register routes in server.js: app.use('/api/users', usersRouter); app.use('/api/follows', followsRouter).",
+
+    "Create routes/search.js. Mount on /api/search. GET / — query param ?q=&type=all|users|posts. Users: SELECT from users WHERE username LIKE '%q%' OR full_name LIKE '%q%', return with is_following. Posts: SELECT from posts JOIN users WHERE posts.content LIKE '%q%', return enriched post objects. Limit both to 20 results. GET /trending — return 6 posts with most likes in last 7 days. Register as app.use('/api/search', searchRouter) in server.js.",
+
+    "Create public/profile.html. Three-column layout (same sidebars as index.html). Center column: cover image div, avatar positioned overlapping cover, user full_name, @username, bio, location, website link, join date, stats row (posts/followers/following counts as clickable buttons), tabs (Posts | Followers | Following), tab content div#profile-content. If viewing own profile: 'Edit Profile' button; otherwise 'Follow'/'Following' toggle button. Script tags: app.js then profile.js.",
+
+    "Create public/explore.html. Three-column layout. Center column: search bar div#explore-search (text input with search icon button), category filter pills row (All, Photography, Travel, Art, Technology, Food, Lifestyle — static labels that filter by appending label as search query), trending posts grid div#trending-grid (CSS grid 2-3 columns of post thumbnails), search results div#search-results (hidden by default). Script tags: app.js then explore.js.",
+
+    "Create public/js/profile.js. On DOMContentLoaded: read username from URL param ?user=username (or use current user if no param). Fetch GET /api/users/:username to populate profile header. Fetch GET /api/users/:username/posts to render posts in #profile-content. Wire follow/unfollow button: POST or DELETE /api/follows/:userId, update button state and counts. Wire tab switching (Posts | Followers | Following): on click Followers tab fetch GET /api/users/:username/followers, render user cards; on Following tab fetch following list. Edit profile button (own profile only): open a modal with form fields (full_name, bio, location, website, avatar file input, cover file input), on submit PUT /me with FormData (multipart for file uploads), on success refresh profile data, update localStorage currentUser.",
+
+    "Create public/js/explore.js. On DOMContentLoaded: fetch GET /api/search/trending, render into #trending-grid as image tiles (or text tiles if no image) with like count overlay. Wire #explore-search form submit: fetch GET /api/search?q=query&type=all, show #search-results section with user cards and post cards. Wire category pills: on click, fetch /api/search?q=categoryLabel&type=posts, render results. Wire click on user cards to navigate to /profile.html?user=username.",
+
+    "Commit: 'feat(FEAT-003): user profiles, follow system, search and explore'"
+  ],
+  "acceptance_criteria": [
+    "GET /api/users/:username returns profile data including counts",
+    "POST /api/follows/:userId creates a follow relationship; GET /api/users/:username shows is_following: true",
+    "DELETE /api/follows/:userId removes the follow; follower_count decrements",
+    "Self-follow returns 400",
+    "Duplicate follow returns 200 (INSERT OR IGNORE)",
+    "profile.html?user=testuser loads that user's profile and posts",
+    "Follow/unfollow button on profile.html toggles correctly and updates counts",
+    "explore.html loads trending posts grid",
+    "Search for a username returns matching user(s) in results",
+    "Category filter pill click returns posts matching that category text",
+    "Edit profile modal on own profile saves changes (bio, avatar upload) and reflects them immediately"
+  ],
+  "verification": [
+    "node server.js — server starts cleanly",
+    "Register two users. From user A: visit /profile.html?user=userB, click Follow — count increments",
+    "Visit /explore.html — trending grid renders, search for userB — user card appears in results",
+    "Edit profile as user A: upload avatar, change bio — changes persist after page refresh",
+    "No JS errors in browser devtools on any profile or explore page action"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

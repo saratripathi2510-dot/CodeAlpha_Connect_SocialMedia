@@ -1,0 +1,62 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Project scaffold, database layer, and authentication system. Sets up the entire backend skeleton and login/register UI that every other feature depends on.",
+  "status": "completed",
+  "steps": [
+    "Create package.json at project root with name 'connect', version '1.0.0', main 'server.js', scripts: { start: 'node server.js', dev: 'node server.js' }. Dependencies: express, better-sqlite3, bcryptjs, express-session, express-validator, multer, dotenv, helmet, uuid, cors. No devDependencies required.",
+
+    "Create .env.example at project root with: PORT=3000, SESSION_SECRET=your_secret_key_change_in_production, NODE_ENV=development, MAX_FILE_SIZE=5242880 (5MB in bytes), ALLOWED_ORIGINS=http://localhost:3000",
+
+    "Create .gitignore at project root. Include: node_modules/, .env, database/connect.db, uploads/*, !uploads/.gitkeep, *.log",
+
+    "Create database/schema.sql with all table definitions: users (id INTEGER PK AUTOINCREMENT, username TEXT UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, full_name TEXT NOT NULL, bio TEXT DEFAULT '', avatar TEXT DEFAULT '', cover_image TEXT DEFAULT '', location TEXT DEFAULT '', website TEXT DEFAULT '', created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP); posts (id, user_id FK, content TEXT NOT NULL, image TEXT, created_at, updated_at); likes (id, user_id FK, post_id FK, UNIQUE(user_id, post_id)); bookmarks (id, user_id FK, post_id FK, UNIQUE(user_id, post_id)); comments (id, user_id FK, post_id FK, content TEXT NOT NULL, created_at, updated_at); follows (id, follower_id FK, following_id FK, UNIQUE(follower_id, following_id)); notifications (id, user_id FK, actor_id FK, type TEXT, post_id FK nullable, comment_id FK nullable, read INTEGER DEFAULT 0, created_at); messages (id, sender_id FK, receiver_id FK, content TEXT NOT NULL, read INTEGER DEFAULT 0, created_at); conversations (id, user1_id FK, user2_id FK, UNIQUE(user1_id, user2_id)). Add all appropriate CREATE TABLE IF NOT EXISTS and CREATE UNIQUE INDEX IF NOT EXISTS statements.",
+
+    "Create database/db.js. Import better-sqlite3 and path. Open (or create) database/connect.db synchronously. Read schema.sql and execute it via db.exec(). Export the db instance. Also export a helper initDB() function that creates the uploads/ directory via fs.mkdirSync if it does not exist.",
+
+    "Create middleware/auth.js. Export requireAuth(req, res, next): if req.session.userId exists call next(); else res.status(401).json({ success: false, error: 'Authentication required' }). Export optionalAuth(req, res, next): if req.session.userId exists, fetch user from DB and attach to req.user; always call next().",
+
+    "Create middleware/upload.js. Configure multer with diskStorage: destination uploads/, filename uses uuid + original extension. Create avatarUpload (single 'avatar'), coverUpload (single 'cover'), postImageUpload (single 'image'). Apply fileFilter that accepts only image/jpeg, image/png, image/gif, image/webp. Apply limits: fileSize 5MB.",
+
+    "Create routes/auth.js. Mount on /api/auth. Endpoints: POST /register — validate body (full_name, username, email, password, confirmPassword), hash password with bcryptjs (rounds=12), insert user, set req.session.userId, return user object (no password). POST /login — find user by email, compare password, set session, return user. POST /logout — destroy session. GET /me — requireAuth, return current user from DB.",
+
+    "Create server.js. Import express, helmet, cors, express-session, dotenv, path. Load .env. Call initDB(). Apply helmet(), cors(), express.json(), express.urlencoded(), session middleware (secret from env, resave false, saveUninitialized false, cookie secure only in production). Serve uploads/ at /uploads. Serve public/ statically at /. Mount /api/auth on routes/auth.js. For any GET request not matching /api/*, serve public/index.html (SPA fallback — but only if the file doesn't exist; otherwise serve 404.html). Listen on PORT.",
+
+    "Run `npm install` to install all dependencies.",
+
+    "Create public/css/style.css. Define all CSS custom properties under :root for both light and dark modes: --color-primary (#C87557 terracotta), --color-bg (#FFFFFF), --color-surface (#F5EBDD sand), --color-text (#352820 espresso), --color-border (#E5D6C5), --color-text-muted, --color-shadow, --radius-sm, --radius-md, --radius-lg, --font-sans ('Inter', 'DM Sans', sans-serif). Dark mode overrides on html.dark. Include a full CSS reset (box-sizing border-box, margin 0, padding 0). Define utility classes: .btn, .btn-primary, .btn-secondary, .btn-ghost, .card, .avatar (circular), .badge, .input, .textarea, .form-group, .form-label, .form-error, .flex, .flex-col, .gap-*, .mt-*, .mb-*, .text-center. Define the three-column desktop layout: .app-layout (CSS grid with sidebar-left 260px / center 1fr / sidebar-right 300px), .sidebar-left, .feed-column, .sidebar-right. Include the top navigation bar styles: .topbar, .topbar-search, .topbar-actions. Include post card styles: .post-card, .post-header, .post-author, .post-content, .post-image, .post-actions, .post-action-btn. Include modal styles: .modal-overlay, .modal, .modal-header, .modal-body, .modal-footer. Include spinner/loading styles.",
+
+    "Create public/css/auth.css. Styles specific to login.html and register.html: centered card layout with Connect branding, logo mark, form styling, link colors, divider between form and social-proof text.",
+
+    "Create public/css/responsive.css. Media queries: @media (max-width: 1024px) hide .sidebar-right; @media (max-width: 768px) hide .sidebar-left, show .bottom-nav, single-column layout, compact topbar; @media (max-width: 480px) further compress spacing, full-width buttons. Define .bottom-nav fixed at bottom with 5 icon buttons (Home, Explore, Notifications, Messages, Profile).",
+
+    "Create public/login.html. Full HTML5 page importing style.css, auth.css, responsive.css. Link tag for Inter/DM Sans from Google Fonts. Form fields: email, password. Links to register.html. Loads public/js/auth.js at body end.",
+
+    "Create public/register.html. Full HTML5 page same imports. Form fields: full_name, username, email, password, confirmPassword. Link to login.html. Loads public/js/auth.js.",
+
+    "Create public/js/auth.js. Handles login form submit (POST /api/auth/login), register form submit (POST /api/auth/register). On success store minimal user info to localStorage (userId, username, avatar) and redirect to index.html. Show inline field-level errors from API validation responses. Also export a checkAuth() function that calls GET /api/auth/me; if 401 and current page is not login/register, redirect to login.html. Call checkAuth() on DOMContentLoaded for protected pages.",
+
+    "Commit: 'feat(FEAT-001): project scaffold, database schema, and authentication'"
+  ],
+  "acceptance_criteria": [
+    "npm install completes without errors",
+    "node server.js starts without errors and logs 'Connect server running on port 3000'",
+    "GET http://localhost:3000/login.html returns the login page",
+    "POST /api/auth/register with valid data creates a user and returns session",
+    "POST /api/auth/login with correct credentials sets session cookie",
+    "POST /api/auth/login with wrong password returns 401",
+    "GET /api/auth/me without a session returns 401",
+    "GET /api/auth/me with a valid session returns the user object",
+    "Passwords are stored as bcrypt hashes (never plaintext) in connect.db",
+    "Duplicate username or email on register returns a 409 error"
+  ],
+  "verification": [
+    "npm install — exits 0",
+    "node server.js — server starts, no crash",
+    "Open http://localhost:3000/login.html in browser — page renders correctly in both light and dark mode",
+    "Open http://localhost:3000/register.html — page renders, register a test user, observe redirect to index.html",
+    "Use SQLite browser or `node -e \"const db=require('./database/db.js'); console.log(db.prepare('SELECT * FROM users').all())\"` to confirm user row exists with hashed password"
+  ],
+  "blocked_reason": null,
+  "findings": "SQLite adapter: better-sqlite3 requires Visual Studio C++ build tools on Windows and has no prebuilt binary for Node 24. Replaced with Node 24's built-in 'node:sqlite' module (DatabaseSync from 'node:sqlite'). The API is identical to better-sqlite3 — synchronous prepare/run/get/all/exec — so no other code changes are needed. All subsequent features that require './database/db.js' will import this built-in-backed db instance. The 'better-sqlite3' package is NOT in package.json. CSS theming: dark mode is toggled by adding class 'dark' to <html> element; theme preference is stored in localStorage as 'theme' = 'dark' | 'light'. Auth: sessions use express-session with in-memory store, cookie.secure = true only when NODE_ENV=production. Password hashing uses bcryptjs at 12 rounds. All API responses follow { success, data, message, error } shape."
+}

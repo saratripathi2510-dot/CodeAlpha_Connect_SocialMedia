@@ -1,0 +1,53 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Core social feed — posts, likes, comments, and bookmarks. Depends on FEAT-001 (database, auth middleware, upload middleware, and CSS foundations must already exist). Independent of FEAT-003 (profiles/follow) and FEAT-004 (notifications/messages).",
+  "status": "pending",
+  "steps": [
+    "Create routes/posts.js. Mount on /api/posts. All write endpoints use requireAuth from middleware/auth.js. Endpoints: GET / — public feed (most recent 20 posts, join users for avatar/username/full_name, include like_count, comment_count, is_liked by current user if session exists, is_bookmarked). GET /feed — requireAuth, posts from followed users + own posts, same joins and counts, paginated with ?page=1&limit=20. GET /:id — single post with full details. POST / — requireAuth, validate content (1-500 chars), optional image via postImageUpload middleware, insert post, return created post. PUT /:id — requireAuth, only post owner can edit, validate content, update post. DELETE /:id — requireAuth, only post owner can delete, delete image file from uploads/ if exists, cascade delete likes/comments/bookmarks/notifications for that post. Helper: buildPostQuery(currentUserId) returns an SQL fragment that selects all post fields plus author info and aggregated counts.",
+
+    "Create routes/likes.js. Mount on /api/likes. POST /posts/:postId — requireAuth, insert into likes (ignore if duplicate via INSERT OR IGNORE), create notification if not self-like (type='like'), return { liked: true, like_count }. DELETE /posts/:postId — requireAuth, delete from likes, return { liked: false, like_count }.",
+
+    "Create routes/comments.js. Mount on /api/comments. GET /posts/:postId — return all comments for a post, join users, ordered by created_at ASC. POST /posts/:postId — requireAuth, validate content (1-300 chars), insert comment, create notification if not self-comment (type='comment'), return created comment with author info. DELETE /:commentId — requireAuth, only comment owner or post owner can delete.",
+
+    "Create routes/bookmarks.js. Mount on /api/bookmarks. POST /posts/:postId — requireAuth, INSERT OR IGNORE into bookmarks, return { bookmarked: true }. DELETE /posts/:postId — requireAuth, delete bookmark, return { bookmarked: false }. GET / — requireAuth, return all bookmarked posts for current user with full post details and counts (same joins as post feed), ordered by bookmark created_at DESC.",
+
+    "Register the four new route files in server.js: app.use('/api/posts', postsRouter); app.use('/api/likes', likesRouter); app.use('/api/comments', commentsRouter); app.use('/api/bookmarks', bookmarksRouter).",
+
+    "Create public/index.html. This is the main feed page. Three-column app-layout. Left sidebar: Connect logo, nav links (Home, Explore, Notifications, Messages, Bookmarks, Profile, Settings) each with an SVG icon, a 'New Post' button, and user mini-profile at the bottom. Top bar: search input. Center column: stories placeholder row (5 circular avatars with gradient rings, static for now), post composer card (avatar + textarea + image-upload button + Post button), feed container div#feed-list. Right sidebar: 'Suggested for you' section div#suggestions-list, 'Trending Topics' section with 5 static placeholder topics. Dark-mode toggle button in topbar. Bottom nav for mobile. Link all CSS files. Script tags: app.js then feed.js.",
+
+    "Create public/bookmarks.html. Same three-column layout as index.html but center column contains only a heading 'Your Bookmarks' and div#bookmarks-list. Script tags: app.js then bookmarks.js.",
+
+    "Create public/js/app.js. This is the shared utility module loaded on every protected page. Exports/provides: apiFetch(endpoint, options) — wraps fetch('/api/'+endpoint, { credentials:'include', headers:{'Content-Type':'application/json'}, ...options }), returns parsed JSON, throws on non-2xx. getCurrentUser() — reads from localStorage, returns user object or null. setCurrentUser(user) — saves to localStorage. clearCurrentUser() — removes from localStorage. initDarkMode() — reads 'theme' from localStorage, applies 'dark' class to html element, wires the toggle button #theme-toggle to flip and persist. formatTimeAgo(dateString) — returns relative time string ('2h ago', 'just now', etc.). showToast(message, type) — creates a toast notification div, appends to body, auto-removes after 3s. renderAvatar(user, size) — returns HTML string for user avatar img or initials fallback. confirmDelete(message) — returns a Promise<boolean> using a custom modal (not browser confirm). Called on DOMContentLoaded: checkAuth() (redirects to login if no session), initDarkMode(), load current user from /api/auth/me and store.",
+
+    "Create public/js/feed.js. On DOMContentLoaded: call loadFeed(). loadFeed() fetches GET /api/posts/feed (falls back to GET /api/posts if 401), renders post cards into #feed-list. renderPost(post) returns an HTML string for a post card with: author avatar, full_name, @username, formatted timestamp, post content text, post image (if present) in a responsive container, action bar (like button with heart icon + count, comment button + count, bookmark button, share/copy-link button, more-options dropdown for own posts). Wire event delegation on #feed-list for: like button (toggle like/unlike via DELETE or POST /api/likes/posts/:id, update count and icon state), bookmark button (toggle via API, update icon), comment button (open comments modal), delete post (show confirmDelete modal, call DELETE /api/posts/:id, remove card from DOM), edit post (open edit modal with pre-filled textarea, call PUT /api/posts/:id). Post composer: wire #post-form submit — FormData POST to /api/posts, prepend new post card to feed on success, clear form. Image preview before upload. Suggested users: fetch GET /api/users/suggestions, render follow cards into #suggestions-list with follow button wired to POST /api/follows/:id.",
+
+    "Create public/js/bookmarks.js. On DOMContentLoaded: loadBookmarks(). Fetches GET /api/bookmarks, renders post cards (same renderPost helper, imported via shared app.js globals or duplicated). Wire unbookmark action on each card. Show empty-state message if no bookmarks.",
+
+    "Commit: 'feat(FEAT-002): posts feed, likes, comments, and bookmarks'"
+  ],
+  "acceptance_criteria": [
+    "POST /api/posts creates a post and it appears in GET /api/posts",
+    "GET /api/posts/feed returns only posts from followed users + own posts",
+    "POST /api/likes/posts/:id toggles like and increments count; DELETE undoes it",
+    "Duplicate like returns 200 (INSERT OR IGNORE) without error",
+    "POST /api/comments/posts/:id adds a comment visible in GET /api/comments/posts/:id",
+    "POST /api/bookmarks/posts/:id saves bookmark; GET /api/bookmarks returns it",
+    "DELETE /api/posts/:id removes post and all associated likes/comments/bookmarks",
+    "index.html loads, shows feed, post composer works end-to-end in browser",
+    "bookmarks.html loads and shows saved posts",
+    "Like and bookmark buttons update their state immediately in the UI without page reload",
+    "Image upload on post creation stores file in uploads/ and returns image URL in post data"
+  ],
+  "verification": [
+    "node server.js — server starts cleanly with routes registered",
+    "Open http://localhost:3000 — index.html loads, feed renders (empty or with posts)",
+    "Create a post via the composer — it appears at top of feed",
+    "Click Like — count increments; click again — count decrements",
+    "Click comment icon — comment modal opens; add comment — it appears",
+    "Bookmark a post — navigate to /bookmarks.html — post appears there",
+    "Open browser devtools console — no JS errors on any of these actions"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

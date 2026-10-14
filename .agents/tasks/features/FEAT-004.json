@@ -1,0 +1,65 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Notifications, direct messages, settings page, full responsive polish, and dark mode. Depends on FEAT-001 (auth), FEAT-002 (posts/likes/comments create notifications), FEAT-003 (follows create notifications). This is the final feature — all backend routes and frontend pages must already exist.",
+  "status": "pending",
+  "steps": [
+    "Create routes/notifications.js. Mount on /api/notifications. GET / — requireAuth, return all notifications for current user, JOIN actor (users) for actor_name/actor_username/actor_avatar, JOIN posts for post snippet if post_id present, ordered created_at DESC, limit 50. GET /unread-count — requireAuth, return { count: N } of unread notifications. PUT /mark-read — requireAuth, UPDATE notifications SET read=1 WHERE user_id=currentUser. PUT /:id/read — requireAuth, mark single notification read. Register as app.use('/api/notifications', notificationsRouter) in server.js.",
+
+    "Create routes/messages.js. Mount on /api/messages. GET /conversations — requireAuth, return list of unique conversations for current user: each row is the other user's profile + last message snippet + unread count + timestamp, derived from messages table by (sender_id=me OR receiver_id=me) grouped by conversation partner. GET /conversation/:userId — requireAuth, return all messages between current user and :userId, ordered created_at ASC. POST /send — requireAuth, validate content (1-1000 chars), validate receiver exists, INSERT INTO messages, return created message with sender info. PUT /conversation/:userId/read — requireAuth, mark all messages from :userId to current user as read. Register as app.use('/api/messages', messagesRouter) in server.js.",
+
+    "Create public/notifications.html. Three-column layout (same sidebars as index.html). Center column: heading 'Notifications', filter tabs (All | Likes | Comments | Follows), notifications list div#notifications-list. Script tags: app.js then notifications.js.",
+
+    "Create public/messages.html. Three-column layout. Center column split into two panels: left panel div#conversations-list (list of conversations), right panel div#message-thread (selected conversation messages + compose input at bottom). On mobile: full-width conversations list, tap to open thread. Script tags: app.js then messages.js.",
+
+    "Create public/settings.html. Three-column layout. Center column: settings sections — Account (change full_name, email, password), Privacy (placeholder toggles), Appearance (dark mode toggle repeated here), Danger Zone (delete account button — disabled/placeholder). Each section is a card. Script tags: app.js then a small inline script or separate settings.js.",
+
+    "Create public/404.html. Minimal centered page: Connect logo, '404 — Page Not Found', link back to index.html. Uses style.css and auth.css for consistent branding.",
+
+    "Create public/js/notifications.js. On DOMContentLoaded: fetchNotifications(). Fetches GET /api/notifications, renders each notification into #notifications-list. Notification types: 'like' → '{actor} liked your post', 'comment' → '{actor} commented on your post', 'follow' → '{actor} started following you'. Each notification links to the relevant post or profile. Mark-all-read button calls PUT /api/notifications/mark-read. Wire filter tabs to filter rendered list by type client-side. Poll for unread count every 30 seconds, update the nav badge.",
+
+    "Create public/js/messages.js. On DOMContentLoaded: loadConversations(). Fetches GET /api/messages/conversations, renders conversation list items into #conversations-list. Each item: avatar, name, last message preview, timestamp, unread badge. Clicking a conversation: loadThread(userId) — fetches GET /api/messages/conversation/:userId, renders message bubbles into #message-thread (own messages right-aligned, theirs left-aligned). Compose form at bottom: on submit POST /api/messages/send with { receiver_id, content }, append sent message to thread. Auto-scroll to bottom of thread after load and after send. Mark read on thread open via PUT /api/messages/conversation/:userId/read.",
+
+    "Create public/js/notifications.js stub if not done above — ensure the notification badge in the nav (present in index.html, profile.html, etc.) updates on page load by fetching /api/notifications/unread-count from app.js initNav() call.",
+
+    "Update public/js/app.js to add initNav(): fetch /api/notifications/unread-count and update #notif-badge element in the sidebar nav. Call initNav() inside the DOMContentLoaded handler. Also ensure the dark mode toggle in settings.html wires to the same initDarkMode() logic.",
+
+    "Create a settings.js in public/js/ (or inline in settings.html). Wire the change-password form: POST /api/auth/change-password (add this endpoint to routes/auth.js — requireAuth, validate currentPassword + newPassword, bcrypt compare then update hash). Wire account info update: PUT /api/users/me with JSON body. Wire dark mode toggle to localStorage + html.dark class. Wire delete account: show confirmDelete modal, on confirm POST /api/auth/delete-account (add endpoint — requireAuth, delete user row cascades via FK or manual cleanup, destroy session, redirect to login).",
+
+    "Add two missing auth endpoints in routes/auth.js: PUT /change-password (requireAuth, validate, bcrypt compare current, hash new, UPDATE users). DELETE /delete-account (requireAuth, delete user's posts+comments+likes+bookmarks+follows+notifications+messages, then delete user row, destroy session).",
+
+    "Polish CSS — review all pages for consistency. Ensure: all buttons have :hover and :focus-visible styles with the terracotta palette; all modals have backdrop blur; post images are object-fit:cover inside fixed-aspect-ratio containers; avatar images are always circular (border-radius 50%); the three-column layout collapses correctly at 1024px and 768px; bottom nav appears on mobile with correct icon sizing; no horizontal overflow at any viewport; dark mode is complete on ALL pages (cards, inputs, modals, sidebars, topbar, bottom nav all switch correctly). Add CSS transitions (0.2s ease) on all interactive elements.",
+
+    "Verify uploads/ directory gitkeep: create uploads/.gitkeep so the directory is tracked (the .gitignore excludes uploads/* but not uploads/.gitkeep).",
+
+    "Create README.md. Include: project name + tagline, tech stack table, setup instructions (git clone, npm install, copy .env.example to .env, node server.js, visit localhost:3000), feature list, screenshots placeholder section, license (MIT).",
+
+    "Final integration check: start server, register two users, follow each other, create posts with images, like/comment/bookmark, check notifications appear, send messages, edit profile, toggle dark mode — all pages function without JS errors.",
+
+    "Commit: 'feat(FEAT-004): notifications, messages, settings, responsive polish, dark mode complete'"
+  ],
+  "acceptance_criteria": [
+    "GET /api/notifications returns notifications created by FEAT-002 like/comment actions and FEAT-003 follow actions",
+    "PUT /api/notifications/mark-read sets all to read=1",
+    "GET /api/messages/conversations returns conversation list for authenticated user",
+    "POST /api/messages/send saves message; GET /api/messages/conversation/:userId returns it",
+    "notifications.html renders notification items with correct actor info and links",
+    "messages.html shows conversation list and message thread with correct sent/received alignment",
+    "settings.html change-password form works end-to-end",
+    "Dark mode toggle on every page correctly switches all colors via CSS custom properties",
+    "Mobile layout (< 768px): bottom nav visible, sidebar hidden, no horizontal scroll on any page",
+    "All pages work without JS errors in browser console",
+    "README.md present with complete setup instructions"
+  ],
+  "verification": [
+    "node server.js — server starts cleanly",
+    "Like a post as user A — log in as user B (owner) — visit /notifications.html — 'liked your post' notification appears",
+    "Send a message from user A to user B — visit /messages.html as user B — conversation appears, thread shows message",
+    "Visit /settings.html — change password — log out — log in with new password — success",
+    "Resize browser to 375px wide — bottom nav appears, no layout breaks, all content readable",
+    "Toggle dark mode on index.html, profile.html, explore.html — all elements switch to dark palette",
+    "No JS errors in browser devtools console across all pages"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect — Good People. Better Conversations.</title>
+  <meta name="description" content="Connect social media platform." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/responsive.css" />
+</head>
+<body>
+
+  <div class="loading-state" id="appLoader" style="min-height:100vh;">
+    <span class="spinner spinner-lg"></span>
+    <span>Loading Connect…</span>
+  </div>
+
+  <!-- App shell — populated by app.js once auth is confirmed -->
+  <div id="app" class="hidden"></div>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    // Redirect unauthenticated visitors to login
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await checkAuth();
+      if (!user) return; // checkAuth already redirected
+
+      // For now, redirect to a coming-soon placeholder
+      // Later features will render the full feed here
+      document.getElementById('appLoader').innerHTML = `
+        <div style="text-align:center; padding: 4rem 2rem; font-family: var(--font-sans); color: var(--color-text);">
+          <div style="font-size:2.5rem; font-weight:800; color:var(--color-primary); margin-bottom:1rem;">Connect</div>
+          <p style="font-size:1.1rem; color:var(--color-text-muted); margin-bottom:2rem;">
+            Welcome, <strong>${user.full_name}</strong>! The feed is being built.
+          </p>
+          <p style="font-size:0.9rem; color:var(--color-text-muted);">
+            More features are coming in the next steps of the build.
+          </p>
+          <div style="margin-top:2rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+            <a href="/profile.html" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1.4rem; background:var(--color-primary); color:#fff; border-radius:9999px; font-weight:600; text-decoration:none; font-size:0.9rem;">View Profile</a>
+            <button onclick="logout()" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1.4rem; background:transparent; color:var(--color-text-muted); border:2px solid var(--color-border); border-radius:9999px; font-weight:600; cursor:pointer; font-size:0.9rem;">Log out</button>
+          </div>
+        </div>`;
+    });
+
+    async function logout() {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      localStorage.removeItem('connect_user');
+      window.location.href = '/login.html';
+    }
+  </script>
+</body>
+</html>
