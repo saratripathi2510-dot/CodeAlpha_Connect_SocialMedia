@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explore — Connect</title>
+  <meta name="description" content="Connect — Discover posts and people." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/responsive.css" />
+  <style>
+    /* Explore-specific styles */
+    .explore-search-wrap {
+      background: var(--color-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      box-shadow: 0 1px 3px var(--color-shadow);
+    }
+    .explore-search-row {
+      display: flex;
+      gap: var(--space-2);
+    }
+    .explore-search-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+    .explore-search-input-wrap input {
+      width: 100%;
+      padding: 0.65rem 0.9rem 0.65rem 2.6rem;
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-full);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
+      outline: none;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .explore-search-input-wrap input:focus {
+      border-color: var(--color-border-focus);
+      box-shadow: 0 0 0 3px rgba(200, 117, 87, 0.12);
+    }
+    .explore-search-input-wrap .search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-muted);
+      pointer-events: none;
+    }
+    .category-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+    .category-pill {
+      padding: 0.3rem 0.85rem;
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      border: 1.5px solid var(--color-border);
+      background: transparent;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: background-color var(--transition-fast), color var(--transition-fast),
+                  border-color var(--transition-fast);
+    }
+    .category-pill:hover,
+    .category-pill.active {
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+    .section-heading {
+      font-size: var(--font-size-base);
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--space-3);
+    }
+    /* Trending grid */
+    .trending-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+    @media (max-width: 520px) {
+      .trending-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .trending-tile {
+      aspect-ratio: 1;
+      position: relative;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .trending-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px var(--color-shadow-md);
+    }
+    .trending-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .trending-tile-text {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-3);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      color: var(--color-text-muted);
+      text-align: center;
+      line-height: 1.4;
+      overflow: hidden;
+    }
+    .trending-tile-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: var(--space-2) var(--space-2);
+      background: linear-gradient(to top, rgba(0,0,0,0.55), transparent);
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      color: #fff;
+      font-size: var(--font-size-xs);
+    }
+    .trending-tile-overlay svg { width: 12px; height: 12px; }
+    /* Search results */
+    .search-results-section { margin-bottom: var(--space-6); }
+    .search-section-title {
+      font-size: var(--font-size-sm);
+      font-weight: 700;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-3);
+    }
+    .user-result-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-2);
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--color-text);
+      transition: box-shadow var(--transition-fast);
+    }
+    .user-result-card:hover {
+      box-shadow: 0 2px 8px var(--color-shadow);
+      color: var(--color-text);
+    }
+    .user-result-info { flex: 1; overflow: hidden; }
+    .user-result-name {
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .user-result-handle {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+    }
+    .user-result-bio {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ── Topbar ──────────────────────────────────────────── -->
+  <header class="topbar" role="banner">
+    <a href="/index.html" class="topbar-logo" aria-label="Connect home">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="14" fill="var(--color-primary)" opacity="0.15"/>
+        <circle cx="10" cy="16" r="3.5" fill="var(--color-primary)"/>
+        <circle cx="22" cy="10" r="3.5" fill="var(--color-primary)"/>
+        <circle cx="22" cy="22" r="3.5" fill="var(--color-primary)"/>
+        <line x1="13" y1="14.5" x2="19.5" y2="11.5" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="13" y1="17.5" x2="19.5" y2="20.5" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Connect
+    </a>
+
+    <div class="topbar-search" role="search">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="search" id="topbar-search-input" placeholder="Search Connect…"
+        aria-label="Search posts and people" autocomplete="off" />
+    </div>
+
+    <div class="topbar-actions">
+      <a href="/notifications.html" class="topbar-icon-btn always-show" aria-label="Notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+          stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </a>
+      <button class="theme-toggle topbar-icon-btn always-show" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+          stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="theme-toggle-icon" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <span class="sr-only theme-toggle-label">Dark mode</span>
+      </button>
+      <a href="/profile.html" class="topbar-icon-btn always-show" aria-label="Your profile" id="topbar-avatar-link">
+        <span id="topbar-avatar">
+          <span class="avatar-placeholder avatar-sm" aria-hidden="true">?</span>
+        </span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Left sidebar ─────────────────────────────────────── -->
+  <nav class="sidebar-left" aria-label="Main navigation">
+    <ul class="nav-menu" role="list">
+      <li><a href="/index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-label">Home</span>
+      </a></li>
+      <li><a href="/explore.html" class="nav-item active" aria-current="page">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="nav-label">Explore</span>
+      </a></li>
+      <li><a href="/notifications.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="nav-label">Notifications</span>
+      </a></li>
+      <li><a href="/messages.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">Messages</span>
+      </a></li>
+      <li><a href="/bookmarks.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">Bookmarks</span>
+      </a></li>
+      <li><a href="/profile.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-label">Profile</span>
+      </a></li>
+      <li><a href="/settings.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="nav-label">Settings</span>
+      </a></li>
+    </ul>
+    <div class="divider" style="margin-top:auto"></div>
+    <a href="/profile.html" class="sidebar-user" id="sidebar-user-card">
+      <span id="sidebar-user-avatar"><span class="avatar-placeholder avatar-sm" aria-hidden="true">?</span></span>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+        <div class="sidebar-user-handle" id="sidebar-user-handle">@…</div>
+      </div>
+      <button class="btn-icon" id="logout-btn" title="Log out" aria-label="Log out"
+        style="margin-left:auto;flex-shrink:0" onclick="event.preventDefault();handleLogout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </a>
+  </nav>
+
+  <!-- ── Center / Explore column ──────────────────────────── -->
+  <main class="feed-column" id="main-content" role="main">
+
+    <!-- Search bar -->
+    <div class="explore-search-wrap">
+      <form id="explore-search-form" role="search" aria-label="Search Connect">
+        <div class="explore-search-row">
+          <div class="explore-search-input-wrap">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+              stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="search" id="explore-search-input" placeholder="Search people and posts…"
+              aria-label="Search people and posts" autocomplete="off" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Search</button>
+        </div>
+        <div class="category-pills" role="group" aria-label="Category filters">
+          <button type="button" class="category-pill active" data-category="All">All</button>
+          <button type="button" class="category-pill" data-category="Photography">Photography</button>
+          <button type="button" class="category-pill" data-category="Travel">Travel</button>
+          <button type="button" class="category-pill" data-category="Art">Art</button>
+          <button type="button" class="category-pill" data-category="Technology">Technology</button>
+          <button type="button" class="category-pill" data-category="Food">Food</button>
+          <button type="button" class="category-pill" data-category="Lifestyle">Lifestyle</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Trending posts grid -->
+    <div id="trending-section">
+      <h2 class="section-heading">Trending this week</h2>
+      <div id="trending-grid" class="trending-grid">
+        <!-- Populated by explore.js -->
+        <div style="grid-column:1/-1" class="loading-state">
+          <span class="spinner"></span>
+          <span>Loading trending posts…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search results (hidden by default) -->
+    <div id="search-results" class="hidden">
+      <h2 class="section-heading" id="search-results-title">Search results</h2>
+
+      <!-- People results -->
+      <div id="people-results" class="search-results-section hidden">
+        <div class="search-section-title">People</div>
+        <div id="people-list"></div>
+      </div>
+
+      <!-- Posts results -->
+      <div id="posts-results" class="search-results-section hidden">
+        <div class="search-section-title">Posts</div>
+        <div id="posts-list"></div>
+      </div>
+
+      <!-- No results -->
+      <div id="no-results" class="empty-state hidden">
+        <div class="empty-state-icon" aria-hidden="true">🔍</div>
+        <h3>No results found</h3>
+        <p>Try a different search term or category.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Right sidebar ─────────────────────────────────────── -->
+  <aside class="sidebar-right" aria-label="Trending topics">
+    <section class="sidebar-section">
+      <h2 class="sidebar-section-title">Trending Topics</h2>
+      <ul role="list" style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <li><a href="/explore.html?q=Photography" class="trending-topic">
+          <span style="font-weight:600;font-size:var(--font-size-sm)">#Photography</span>
+          <span class="text-xs text-muted">2.4k posts</span>
+        </a></li>
+        <li><a href="/explore.html?q=Travel" class="trending-topic">
+          <span style="font-weight:600;font-size:var(--font-size-sm)">#Travel</span>
+          <span class="text-xs text-muted">1.8k posts</span>
+        </a></li>
+        <li><a href="/explore.html?q=Technology" class="trending-topic">
+          <span style="font-weight:600;font-size:var(--font-size-sm)">#Technology</span>
+          <span class="text-xs text-muted">3.1k posts</span>
+        </a></li>
+        <li><a href="/explore.html?q=Art" class="trending-topic">
+          <span style="font-weight:600;font-size:var(--font-size-sm)">#Art</span>
+          <span class="text-xs text-muted">987 posts</span>
+        </a></li>
+        <li><a href="/explore.html?q=Food" class="trending-topic">
+          <span style="font-weight:600;font-size:var(--font-size-sm)">#Food</span>
+          <span class="text-xs text-muted">1.2k posts</span>
+        </a></li>
+      </ul>
+    </section>
+    <section class="sidebar-section">
+      <h2 class="sidebar-section-title">Suggested for you</h2>
+      <div id="suggestions-list">
+        <div class="loading-state" style="padding:var(--space-4) 0">
+          <span class="spinner" style="width:18px;height:18px;border-width:2px"></span>
+        </div>
+      </div>
+    </section>
+  </aside>
+
+  <!-- ── Bottom nav (mobile) ───────────────────────────────── -->
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="/index.html" class="bottom-nav-item" aria-label="Home">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a href="/explore.html" class="bottom-nav-item active" aria-label="Explore" aria-current="page">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Explore
+    </a>
+    <a href="/notifications.html" class="bottom-nav-item" aria-label="Notifications">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Alerts
+    </a>
+    <a href="/messages.html" class="bottom-nav-item" aria-label="Messages">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Messages
+    </a>
+    <a href="/profile.html" class="bottom-nav-item" aria-label="Profile">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </a>
+  </nav>
+
+</div><!-- /.app-layout -->
+
+<style>
+.trending-topic {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--color-text);
+  text-decoration: none;
+  padding: var(--space-2) 0;
+}
+.trending-topic:hover span:first-child { color: var(--color-primary); }
+</style>
+
+<script src="/js/app.js"></script>
+<script src="/js/explore.js"></script>
+<script>
+async function handleLogout() {
+  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+  clearCurrentUser();
+  window.location.href = '/login.html';
+}
+
+const _origPopulateExplore = window.populateSidebarUser;
+window.populateSidebarUser = function(user) {
+  if (_origPopulateExplore) _origPopulateExplore(user);
+  const el = document.getElementById('topbar-avatar');
+  if (!el) return;
+  if (user.avatar) {
+    el.innerHTML = `<img src="${user.avatar}" alt="Your avatar" class="avatar avatar-sm">`;
+  } else {
+    const initials = (user.full_name || user.username || '?')
+      .split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    el.innerHTML = `<span class="avatar-placeholder avatar-sm">${initials}</span>`;
+  }
+};
+</script>
+</body>
+</html>

@@ -13,6 +13,9 @@ const postsRoutes     = require('./routes/posts');
 const likesRoutes     = require('./routes/likes');
 const commentsRoutes  = require('./routes/comments');
 const bookmarksRoutes = require('./routes/bookmarks');
+const usersRoutes     = require('./routes/users');
+const followsRoutes   = require('./routes/follows');
+const searchRoutes    = require('./routes/search');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -65,6 +68,9 @@ app.use('/api/posts',     postsRoutes);
 app.use('/api/likes',     likesRoutes);
 app.use('/api/comments',  commentsRoutes);
 app.use('/api/bookmarks', bookmarksRoutes);
+app.use('/api/users',     usersRoutes);
+app.use('/api/follows',   followsRoutes);
+app.use('/api/search',    searchRoutes);
 
 // ─── SPA / HTML fallback ─────────────────────────────────────────────────────
 app.get('*', (req, res) => {
