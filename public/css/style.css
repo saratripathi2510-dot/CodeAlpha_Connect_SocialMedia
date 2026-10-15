@@ -1209,7 +1209,169 @@ ol {
   margin-bottom: var(--space-3);
 }
 
-/* ── Stories ─────────────────────────────────────────────── */
+/* ── Story styling ───────────────────────────────────────── */
+.trending-topic {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--color-text);
+  text-decoration: none;
+  padding: var(--space-2) 0;
+}
+.trending-topic:hover span:first-child { color: var(--color-primary); }
+
+/* ── Notification badge on nav items ─────────────────────── */
+.nav-badge {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  background-color: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-full);
+  padding: 1px 7px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* ── Messages page specific ──────────────────────────────── */
+.messages-layout {
+  background: var(--color-card);
+}
+.conversations-panel,
+.thread-panel,
+.thread-header,
+.conversations-header,
+.compose-area {
+  background: var(--color-card);
+}
+.conversation-item:hover { background-color: var(--color-surface); }
+.conversation-item.active { background-color: var(--color-primary-light); }
+.message-bubble.received { background: var(--color-surface); color: var(--color-text); }
+.message-bubble.sent-bubble { background: var(--color-primary); color: #fff; }
+
+/* Dark mode specifics for messages */
+html.dark .message-bubble.received {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+html.dark .compose-area textarea {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+/* ── Settings page ───────────────────────────────────────── */
+.settings-section {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+.settings-section-title {
+  color: var(--color-text);
+  border-bottom-color: var(--color-border);
+}
+.settings-toggle-label { color: var(--color-text); }
+.toggle-slider { background-color: var(--color-border); }
+html.dark .toggle-slider { background-color: var(--color-surface-alt); }
+
+/* ── Input/textarea dark mode polish ─────────────────────── */
+html.dark .input,
+html.dark .textarea,
+html.dark .select {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+html.dark .input::placeholder,
+html.dark .textarea::placeholder {
+  color: var(--color-text-light);
+}
+html.dark .topbar-search input {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+html.dark .post-composer textarea {
+  color: var(--color-text);
+}
+html.dark .post-composer textarea::placeholder {
+  color: var(--color-text-light);
+}
+
+/* ── Dropdown dark mode ──────────────────────────────────── */
+html.dark .dropdown-menu {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+html.dark .dropdown-item:hover {
+  background-color: var(--color-surface);
+}
+
+/* ── Modal dark mode ─────────────────────────────────────── */
+html.dark .modal {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+html.dark .modal-header,
+html.dark .modal-footer {
+  border-color: var(--color-border);
+}
+
+/* ── Toast dark mode ─────────────────────────────────────── */
+html.dark .toast {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+/* ── Card dark mode ──────────────────────────────────────── */
+html.dark .card,
+html.dark .post-card,
+html.dark .post-composer,
+html.dark .stories-bar,
+html.dark .sidebar-left,
+html.dark .sidebar-right,
+html.dark .topbar,
+html.dark .bottom-nav {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+/* ── Auth pages dark mode ────────────────────────────────── */
+html.dark .auth-card {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+/* ── Notif items dark mode ───────────────────────────────── */
+html.dark .notif-item {
+  color: var(--color-text);
+}
+html.dark .notif-item.unread {
+  background-color: var(--color-primary-light);
+}
+html.dark .notif-item:hover {
+  background-color: var(--color-surface);
+}
+
+/* ── Focus visible ring ──────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Transition on all interactive elements ──────────────── */
+button, a, input, textarea, select, .card, .post-card {
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* ── Stories bar ─────────────────────────────────────────── */
 .stories-bar {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);

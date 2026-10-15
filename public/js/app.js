@@ -316,6 +316,37 @@ function initTopbarSearch() {
   });
 }
 
+// ─── Notification badge (shared across all pages) ────────────────────────────
+
+async function initNav() {
+  try {
+    const json = await fetch('/api/notifications/unread-count', { credentials: 'include' });
+    if (!json.ok) return;
+    const data = await json.json();
+    const count = (data.data && data.data.count) || 0;
+
+    // Sidebar badge
+    const navBadge = document.getElementById('notif-badge');
+    if (navBadge) {
+      if (count > 0) {
+        navBadge.textContent = count > 99 ? '99+' : String(count);
+        navBadge.classList.remove('hidden');
+      } else {
+        navBadge.classList.add('hidden');
+      }
+    }
+
+    // Topbar dot
+    const dot = document.getElementById('notif-dot');
+    if (dot) {
+      if (count > 0) dot.classList.remove('hidden');
+      else dot.classList.add('hidden');
+    }
+  } catch {
+    // Silently ignore — badge is non-critical
+  }
+}
+
 // ─── Bootstrap ───────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -328,17 +359,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     populateSidebarUser(user);
     // Expose globally for feed.js / bookmarks.js
     window._currentUser = user;
+    // Fetch initial notification count
+    initNav();
+    // Poll every 30 seconds
+    setInterval(initNav, 30000);
   }
 });
 
 // Expose globally for other page scripts
-window.apiFetch       = apiFetch;
-window.getCurrentUser = getCurrentUser;
-window.setCurrentUser = setCurrentUser;
-window.clearCurrentUser = clearCurrentUser;
-window.checkAuth      = checkAuth;
-window.formatTimeAgo  = formatTimeAgo;
-window.showToast      = showToast;
-window.renderAvatar   = renderAvatar;
-window.confirmDelete  = confirmDelete;
-window.escapeHtml     = escapeHtml;
+window.apiFetch            = apiFetch;
+window.getCurrentUser      = getCurrentUser;
+window.setCurrentUser      = setCurrentUser;
+window.clearCurrentUser    = clearCurrentUser;
+window.checkAuth           = checkAuth;
+window.formatTimeAgo       = formatTimeAgo;
+window.showToast           = showToast;
+window.renderAvatar        = renderAvatar;
+window.confirmDelete       = confirmDelete;
+window.escapeHtml          = escapeHtml;
+window.initNav             = initNav;
+window.updateThemeToggleUI = updateThemeToggleUI;
+window.populateSidebarUser = populateSidebarUser;

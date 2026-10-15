@@ -56,16 +56,27 @@ function renderProfileHeader(user) {
          </svg>
          Edit Profile
        </button>`
-    : `<button
-         class="btn btn-sm ${user.is_following ? 'btn-ghost' : 'btn-primary'}"
-         id="follow-btn"
-         data-user-id="${user.id}"
-         data-following="${user.is_following ? '1' : '0'}"
-         aria-label="${user.is_following ? 'Unfollow' : 'Follow'} ${escapeHtml(user.username)}"
-         aria-pressed="${user.is_following}"
-       >
-         ${user.is_following ? 'Following' : 'Follow'}
-       </button>`;
+    : `<div style="display:flex;gap:var(--space-2)">
+         <button
+           class="btn btn-sm ${user.is_following ? 'btn-ghost' : 'btn-primary'}"
+           id="follow-btn"
+           data-user-id="${user.id}"
+           data-following="${user.is_following ? '1' : '0'}"
+           aria-label="${user.is_following ? 'Unfollow' : 'Follow'} ${escapeHtml(user.username)}"
+           aria-pressed="${user.is_following}"
+         >
+           ${user.is_following ? 'Following' : 'Follow'}
+         </button>
+         <a href="/messages.html?user=${encodeURIComponent(user.username)}"
+           class="btn btn-secondary btn-sm"
+           aria-label="Message ${escapeHtml(user.username)}">
+           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
+             stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+           </svg>
+           Message
+         </a>
+       </div>`;
 
   const locationHtml = user.location
     ? `<span class="profile-meta-item">

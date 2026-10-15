@@ -8,14 +8,16 @@ const path = require('path');
 const fs = require('fs');
 
 const { initDB } = require('./database/db');
-const authRoutes      = require('./routes/auth');
-const postsRoutes     = require('./routes/posts');
-const likesRoutes     = require('./routes/likes');
-const commentsRoutes  = require('./routes/comments');
-const bookmarksRoutes = require('./routes/bookmarks');
-const usersRoutes     = require('./routes/users');
-const followsRoutes   = require('./routes/follows');
-const searchRoutes    = require('./routes/search');
+const authRoutes          = require('./routes/auth');
+const postsRoutes         = require('./routes/posts');
+const likesRoutes         = require('./routes/likes');
+const commentsRoutes      = require('./routes/comments');
+const bookmarksRoutes     = require('./routes/bookmarks');
+const usersRoutes         = require('./routes/users');
+const followsRoutes       = require('./routes/follows');
+const searchRoutes        = require('./routes/search');
+const notificationsRoutes = require('./routes/notifications');
+const messagesRoutes      = require('./routes/messages');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -63,14 +65,16 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── API routes ───────────────────────────────────────────────────────────────
-app.use('/api/auth',      authRoutes);
-app.use('/api/posts',     postsRoutes);
-app.use('/api/likes',     likesRoutes);
-app.use('/api/comments',  commentsRoutes);
-app.use('/api/bookmarks', bookmarksRoutes);
-app.use('/api/users',     usersRoutes);
-app.use('/api/follows',   followsRoutes);
-app.use('/api/search',    searchRoutes);
+app.use('/api/auth',           authRoutes);
+app.use('/api/posts',          postsRoutes);
+app.use('/api/likes',          likesRoutes);
+app.use('/api/comments',       commentsRoutes);
+app.use('/api/bookmarks',      bookmarksRoutes);
+app.use('/api/users',          usersRoutes);
+app.use('/api/follows',        followsRoutes);
+app.use('/api/search',         searchRoutes);
+app.use('/api/notifications',  notificationsRoutes);
+app.use('/api/messages',       messagesRoutes);
 
 // ─── SPA / HTML fallback ─────────────────────────────────────────────────────
 app.get('*', (req, res) => {

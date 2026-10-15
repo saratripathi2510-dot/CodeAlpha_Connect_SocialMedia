@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Notifications, direct messages, settings page, full responsive polish, and dark mode. Depends on FEAT-001 (auth), FEAT-002 (posts/likes/comments create notifications), FEAT-003 (follows create notifications). This is the final feature — all backend routes and frontend pages must already exist.",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Create routes/notifications.js. Mount on /api/notifications. GET / — requireAuth, return all notifications for current user, JOIN actor (users) for actor_name/actor_username/actor_avatar, JOIN posts for post snippet if post_id present, ordered created_at DESC, limit 50. GET /unread-count — requireAuth, return { count: N } of unread notifications. PUT /mark-read — requireAuth, UPDATE notifications SET read=1 WHERE user_id=currentUser. PUT /:id/read — requireAuth, mark single notification read. Register as app.use('/api/notifications', notificationsRouter) in server.js.",
 
