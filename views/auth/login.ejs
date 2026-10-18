@@ -1,0 +1,117 @@
+<%- include('../partials/head') %>
+<div class="auth-layout">
+
+  <!-- Visual Panel -->
+  <div class="auth-visual" aria-hidden="true">
+    <div class="auth-visual-bg"></div>
+    <div class="auth-visual-overlay"></div>
+    <div class="auth-visual-content">
+      <div class="auth-brand">
+        <div class="auth-brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="auth-brand-name">Connect</span>
+      </div>
+      <h1 class="auth-headline">Good People.<br>Better Conversations.</h1>
+      <p class="auth-tagline">Join a community built on genuine connection — where every voice matters and every story deserves to be heard.</p>
+
+      <!-- Decorative leaves -->
+      <svg class="auth-decoration" style="bottom:-40px;right:-30px;width:280px;height:280px" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 20 Q140 60 120 100 Q100 140 60 120 Q20 100 40 60 Q60 20 100 20Z" fill="rgba(255,255,255,0.08)"/>
+        <path d="M150 60 Q170 90 155 120 Q140 150 110 140 Q80 130 85 100 Q90 70 120 65 Q150 60 150 60Z" fill="rgba(255,255,255,0.06)"/>
+        <path d="M40 130 Q55 110 75 120 Q95 130 90 150 Q85 170 65 168 Q45 166 40 148 Q35 130 40 130Z" fill="rgba(255,255,255,0.05)"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Form Panel -->
+  <div class="auth-form-panel">
+    <div class="auth-form-inner">
+
+      <!-- Mobile brand -->
+      <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-6);text-decoration:none">
+        <div style="width:36px;height:36px;background:var(--sage);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span style="font-family:var(--font-serif);font-size:1.375rem;font-weight:700;color:var(--text-primary)">Connect</span>
+      </div>
+
+      <h2 class="auth-form-title">Welcome back</h2>
+      <p class="auth-form-subtitle">Sign in to your account to continue.</p>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="flash flash-error" role="alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <%= error %>
+        </div>
+      <% } %>
+
+      <form action="/login" method="POST" novalidate>
+        <div class="form-group">
+          <label for="identifier" class="form-label">Username or Email</label>
+          <div class="input-group">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+            <input
+              type="text"
+              id="identifier"
+              name="identifier"
+              class="form-input"
+              placeholder="your_username or email@example.com"
+              autocomplete="username email"
+              required
+              autofocus
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-2)">
+          Sign In
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </form>
+
+      <div style="text-align:center;margin-top:var(--space-6);font-size:0.9375rem;color:var(--text-muted)">
+        New to Connect?
+        <a href="/register" style="color:var(--sage);font-weight:600">Create an account</a>
+      </div>
+
+      <!-- Theme toggle on auth page -->
+      <div style="text-align:center;margin-top:var(--space-4)">
+        <button id="theme-cycle" class="theme-toggle" style="display:inline-flex" aria-label="Toggle theme">
+          <span id="theme-icon">☀️</span>
+          <span id="theme-label">Light</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/theme.js"></script>
+</body>
+</html>

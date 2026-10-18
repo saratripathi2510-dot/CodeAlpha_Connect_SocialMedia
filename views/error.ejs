@@ -1,0 +1,37 @@
+<%- include('partials/head') %>
+<div class="error-page">
+
+  <!-- Botanical decoration -->
+  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:var(--space-4);opacity:0.35">
+    <path d="M60 100 Q60 65 35 38 Q60 50 72 20 Q78 50 98 43 Q84 68 60 100Z" fill="var(--botanical)"/>
+    <path d="M60 100 Q60 68 88 50 Q74 74 96 82 Q80 82 60 100Z" fill="var(--sage)"/>
+    <line x1="60" y1="100" x2="60" y2="115" stroke="var(--botanical-dark)" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
+
+  <div class="error-code"><%= typeof code !== 'undefined' ? code : '404' %></div>
+  <h1 class="error-title"><%= code === 404 ? 'Page Not Found' : (code === 500 ? 'Something Went Wrong' : 'Oops!') %></h1>
+  <p class="error-message"><%= typeof message !== 'undefined' ? message : 'The page you\'re looking for doesn\'t exist.' %></p>
+
+  <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;justify-content:center">
+    <a href="/" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Go Home
+    </a>
+    <button onclick="history.back()" class="btn btn-outline">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      Go Back
+    </button>
+  </div>
+
+  <!-- Theme toggle -->
+  <div style="margin-top:var(--space-8)">
+    <button id="theme-cycle" class="theme-toggle" aria-label="Toggle theme">
+      <span id="theme-icon">☀️</span>
+      <span id="theme-label">Light</span>
+    </button>
+  </div>
+</div>
+
+<script src="/js/theme.js"></script>
+</body>
+</html>

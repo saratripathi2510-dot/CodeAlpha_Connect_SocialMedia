@@ -1,0 +1,161 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/sidebar') %>
+
+  <main class="main-content">
+    <!-- Header -->
+    <div style="margin-bottom:var(--space-6)">
+      <h1 style="font-family:var(--font-serif);font-size:1.75rem;font-weight:700;color:var(--text-primary);margin-bottom:var(--space-2)">Explore</h1>
+      <p style="color:var(--text-muted);font-size:0.9375rem">Discover people, posts, and conversations.</p>
+    </div>
+
+    <!-- Search bar -->
+    <form action="/explore" method="GET" style="margin-bottom:var(--space-4)">
+      <div class="search-bar" style="max-width:580px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input
+          type="text"
+          name="q"
+          placeholder="Search people, posts, topics..."
+          value="<%= typeof q !== 'undefined' ? q : '' %>"
+          autocomplete="off"
+          style="font-size:1rem"
+          aria-label="Search"
+          autofocus
+        >
+        <% if (typeof q !== 'undefined' && q) { %>
+        <a href="/explore" style="color:var(--text-muted);text-decoration:none;line-height:1" aria-label="Clear search">✕</a>
+        <% } %>
+      </div>
+      <!-- Filter chips -->
+      <% if (typeof q !== 'undefined' && q) { %>
+      <div class="filter-chips" style="margin-top:var(--space-3)">
+        <a href="/explore?q=<%= encodeURIComponent(q) %>&filter=all" class="filter-chip <%= (!filter || filter === 'all') ? 'active' : '' %>">All</a>
+        <a href="/explore?q=<%= encodeURIComponent(q) %>&filter=people" class="filter-chip <%= filter === 'people' ? 'active' : '' %>">People</a>
+        <a href="/explore?q=<%= encodeURIComponent(q) %>&filter=posts" class="filter-chip <%= filter === 'posts' ? 'active' : '' %>">Posts</a>
+      </div>
+      <% } %>
+    </form>
+
+    <!-- Search Results -->
+    <% if (typeof q !== 'undefined' && q) { %>
+
+      <!-- People results -->
+      <% if (users && users.length > 0) { %>
+      <div class="card card-padded" style="margin-bottom:var(--space-4)">
+        <h2 style="font-size:1rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:var(--space-4)">People</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <% users.forEach(user => { %>
+          <div style="display:flex;align-items:center;gap:var(--space-4)">
+            <a href="/u/<%= user.username %>">
+              <% if (user.avatar_url) { %>
+                <img src="<%= user.avatar_url %>" alt="<%= user.display_name %>" class="avatar avatar-lg">
+              <% } else { %>
+                <div class="avatar avatar-lg avatar-placeholder"><%= user.display_name.charAt(0).toUpperCase() %></div>
+              <% } %>
+            </a>
+            <div style="flex:1;min-width:0">
+              <a href="/u/<%= user.username %>" style="font-size:1rem;font-weight:600;color:var(--text-primary);text-decoration:none;display:block"><%= user.display_name %></a>
+              <div style="font-size:0.875rem;color:var(--text-muted)">@<%= user.username %></div>
+              <% if (user.bio) { %>
+                <p style="font-size:0.875rem;color:var(--text-secondary);margin-top:var(--space-1);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical"><%= user.bio %></p>
+              <% } %>
+            </div>
+            <form action="/u/<%= user.username %>/follow" method="POST">
+              <button type="submit" class="btn <%= user.is_following ? 'btn-outline' : 'btn-primary' %> btn-sm">
+                <%= user.is_following ? 'Following' : 'Follow' %>
+              </button>
+            </form>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Post results -->
+      <% if (posts && posts.length > 0) { %>
+        <div style="margin-bottom:var(--space-4)">
+          <h2 style="font-size:1rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:var(--space-4)">Posts</h2>
+          <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+            <% posts.forEach(post => { %>
+              <%- include('partials/post-card', { post }) %>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+
+      <% if ((!users || users.length === 0) && (!posts || posts.length === 0)) { %>
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>No results for "<%= q %>"</h3>
+        <p>Try different keywords or browse the posts below.</p>
+      </div>
+      <% } %>
+
+    <% } else { %>
+
+      <!-- Default: Recent posts grid -->
+      <div style="margin-bottom:var(--space-4)">
+        <h2 style="font-size:1rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:var(--space-4)">Recent Posts</h2>
+      </div>
+
+      <% if (posts && posts.length > 0) { %>
+        <% const mediaPosts = posts.filter(p => p.media_url); %>
+        <% const textPosts = posts.filter(p => !p.media_url); %>
+
+        <% if (mediaPosts.length > 0) { %>
+        <div class="explore-grid" style="margin-bottom:var(--space-6)">
+          <% mediaPosts.forEach(post => { %>
+          <div class="explore-grid-item">
+            <a href="/posts/<%= post.id %>" style="display:block;text-decoration:none">
+              <div class="card" style="overflow:hidden">
+                <img src="<%= post.media_url %>" alt="Post by <%= post.display_name %>" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block" loading="lazy">
+                <div style="padding:var(--space-3)">
+                  <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)">
+                    <% if (post.avatar_url) { %>
+                      <img src="<%= post.avatar_url %>" alt="" class="avatar avatar-xs">
+                    <% } else { %>
+                      <div class="avatar avatar-xs avatar-placeholder" style="font-size:0.625rem"><%= post.display_name.charAt(0) %></div>
+                    <% } %>
+                    <span style="font-size:0.8125rem;font-weight:600;color:var(--text-primary)"><%= post.display_name %></span>
+                  </div>
+                  <p style="font-size:0.8125rem;color:var(--text-secondary);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical"><%= post.content %></p>
+                  <div style="display:flex;gap:var(--space-3);margin-top:var(--space-2);font-size:0.75rem;color:var(--text-muted)">
+                    <span>♥ <%= post.like_count %></span>
+                    <span>💬 <%= post.comment_count %></span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+          <% }); %>
+        </div>
+        <% } %>
+
+        <% if (textPosts.length > 0) { %>
+        <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <% textPosts.slice(0, 10).forEach(post => { %>
+            <%- include('partials/post-card', { post }) %>
+          <% }); %>
+        </div>
+        <% } %>
+
+      <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">🌿</div>
+        <h3>Nothing here yet</h3>
+        <p>Be the first to post something amazing.</p>
+        <a href="/" class="btn btn-primary" style="margin-top:var(--space-4)">Go to Feed</a>
+      </div>
+      <% } %>
+    <% } %>
+
+  </main>
+
+  <%- include('partials/right-sidebar') %>
+</div>
+
+<script src="/js/theme.js"></script>
+<script src="/js/feed.js"></script>
+</body>
+</html>

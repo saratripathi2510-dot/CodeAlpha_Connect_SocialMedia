@@ -1,0 +1,107 @@
+<%
+// Expects: post object with all fields, currentUser
+function initials(user) {
+  if (!user) return 'U';
+  const name = user.display_name || user.username || 'U';
+  return name.charAt(0).toUpperCase();
+}
+%>
+<article class="post-card" data-post-id="<%= post.id %>">
+  <header class="post-card-header">
+    <div class="post-author">
+      <a href="/u/<%= post.username %>">
+        <% if (post.avatar_url) { %>
+          <img src="<%= post.avatar_url %>" alt="<%= post.display_name %>" class="avatar avatar-md">
+        <% } else { %>
+          <div class="avatar avatar-md avatar-placeholder"><%= initials(post) %></div>
+        <% } %>
+      </a>
+      <div class="post-author-info">
+        <a href="/u/<%= post.username %>" class="post-author-name"><%= post.display_name %></a>
+        <div class="post-author-handle">@<%= post.username %> · <%= formatDate(post.created_at) %></div>
+      </div>
+    </div>
+
+    <% if (currentUser && currentUser.id === post.user_id) { %>
+    <div class="dropdown">
+      <button class="btn btn-icon btn-ghost" data-dropdown-trigger aria-label="Post options" aria-haspopup="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+        </svg>
+      </button>
+      <div class="dropdown-menu">
+        <a href="/posts/<%= post.id %>" class="dropdown-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          View Post
+        </a>
+        <form action="/posts/<%= post.id %>/delete" method="POST" style="margin:0" onsubmit="return confirm('Delete this post?')">
+          <button type="submit" class="dropdown-item danger">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+    <% } %>
+  </header>
+
+  <!-- Content -->
+  <div class="post-card-content">
+    <p class="post-text"><%= post.content %></p>
+  </div>
+
+  <!-- Media -->
+  <% if (post.media_url) { %>
+  <% if (post.media_type === 'video') { %>
+    <video src="<%= post.media_url %>" class="post-media" controls preload="metadata"></video>
+  <% } else { %>
+    <a href="/posts/<%= post.id %>">
+      <img src="<%= post.media_url %>" alt="Post media" class="post-media" loading="lazy">
+    </a>
+  <% } %>
+  <% } %>
+
+  <!-- Actions -->
+  <footer class="post-card-actions">
+    <!-- Like -->
+    <button
+      class="action-btn like-btn <%= post.is_liked ? 'liked' : '' %>"
+      data-post-id="<%= post.id %>"
+      aria-label="<%= post.is_liked ? 'Unlike' : 'Like' %> post"
+      aria-pressed="<%= !!post.is_liked %>"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="<%= post.is_liked ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <span class="count"><%= post.like_count || 0 %></span>
+    </button>
+
+    <!-- Comment -->
+    <a href="/posts/<%= post.id %>#comments" class="action-btn" aria-label="View comments">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span class="count"><%= post.comment_count || 0 %></span>
+    </a>
+
+    <!-- Bookmark -->
+    <button
+      class="action-btn bookmark-btn <%= post.is_bookmarked ? 'bookmarked' : '' %>"
+      data-post-id="<%= post.id %>"
+      aria-label="<%= post.is_bookmarked ? 'Remove bookmark' : 'Bookmark' %>"
+      aria-pressed="<%= !!post.is_bookmarked %>"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="<%= post.is_bookmarked ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+      </svg>
+    </button>
+
+    <!-- Share -->
+    <button class="action-btn" onclick="navigator.clipboard && navigator.clipboard.writeText(window.location.origin+'/posts/<%= post.id %>').then(()=>alert('Link copied!'))" aria-label="Share post">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+      </svg>
+    </button>
+  </footer>
+</article>

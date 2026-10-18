@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 900" width="800" height="900">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#354A38;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#4A6245;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#718B68;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="leaf1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A8C39A;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#718B68;stop-opacity:0.3"/>
+    </linearGradient>
+    <linearGradient id="leaf2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#C8D5B9;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#354A38;stop-opacity:0.2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="900" fill="url(#bg)"/>
+
+  <!-- Large botanical leaves -->
+  <g opacity="0.25">
+    <!-- Leaf top left -->
+    <path d="M-80 -40 Q100 80 60 220 Q20 320 -60 280 Q-140 240 -100 140 Q-60 60 -80 -40Z" fill="#A8C39A"/>
+    <path d="M-80 -40 Q0 100 60 220" stroke="#C8D5B9" stroke-width="2" fill="none"/>
+
+    <!-- Leaf top right -->
+    <path d="M720 -60 Q620 60 680 200 Q720 300 820 250 Q920 200 880 100 Q840 20 720 -60Z" fill="#C8D5B9"/>
+
+    <!-- Large center leaf -->
+    <path d="M350 -100 Q500 100 460 350 Q420 540 320 480 Q220 420 240 250 Q260 100 350 -100Z" fill="#A8C39A" opacity="0.5"/>
+    <line x1="350" y1="-100" x2="380" y2="480" stroke="#718B68" stroke-width="1.5" opacity="0.4"/>
+
+    <!-- Bottom leaves -->
+    <path d="M-40 700 Q140 620 200 780 Q240 880 120 920 Q0 960 -40 860 Q-80 760 -40 700Z" fill="#8DAF7E"/>
+    <path d="M700 720 Q580 640 540 800 Q510 900 640 940 Q760 980 800 880 Q840 780 700 720Z" fill="#A8C39A"/>
+
+    <!-- Small scattered leaves -->
+    <path d="M100 400 Q160 350 180 420 Q200 490 140 500 Q80 510 100 400Z" fill="#C8D5B9"/>
+    <path d="M580 300 Q640 260 660 330 Q680 400 620 408 Q560 416 580 300Z" fill="#A8C39A"/>
+    <path d="M200 600 Q240 560 260 620 Q280 680 230 690 Q180 700 200 600Z" fill="#8DAF7E"/>
+    <path d="M500 500 Q560 465 575 530 Q590 595 535 600 Q480 605 500 500Z" fill="#C8D5B9"/>
+
+    <!-- Vine stems -->
+    <path d="M150 0 Q180 200 140 400 Q110 580 160 750" stroke="#A8C39A" stroke-width="1.5" fill="none" opacity="0.6"/>
+    <path d="M600 50 Q560 250 600 450 Q640 620 590 820" stroke="#C8D5B9" stroke-width="1" fill="none" opacity="0.4"/>
+
+    <!-- Small dots/berries -->
+    <circle cx="160" cy="200" r="4" fill="#F5C8B8" opacity="0.7"/>
+    <circle cx="145" cy="180" r="3" fill="#FBE3DB" opacity="0.6"/>
+    <circle cx="175" cy="215" r="3" fill="#F5C8B8" opacity="0.5"/>
+    <circle cx="580" cy="150" r="4" fill="#F5C8B8" opacity="0.6"/>
+    <circle cx="595" cy="130" r="2.5" fill="#FBE3DB" opacity="0.5"/>
+    <circle cx="200" cy="550" r="3" fill="#F5C8B8" opacity="0.5"/>
+    <circle cx="520" cy="460" r="3.5" fill="#FBE3DB" opacity="0.5"/>
+  </g>
+
+  <!-- Subtle texture overlay -->
+  <rect width="800" height="900" fill="url(#bg)" opacity="0.15"/>
+</svg>

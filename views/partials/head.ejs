@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Connect — Good People. Better Conversations.">
+  <title><%= typeof title !== 'undefined' ? title : 'Connect' %></title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+
+  <!-- Fonts: Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Theme applied before render to prevent FOUC -->
+  <script>
+    (function(){
+      var t = localStorage.getItem('connect-theme') || 'system';
+      var e = t === 'system'
+        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : t;
+      document.documentElement.setAttribute('data-theme', e);
+    })();
+  </script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/fixes.css">
+  <% if (typeof extraCss !== 'undefined') { %><link rel="stylesheet" href="<%= extraCss %>"><% } %>
+</head>
+<body class="<%= typeof body_class !== 'undefined' ? body_class : '' %>">

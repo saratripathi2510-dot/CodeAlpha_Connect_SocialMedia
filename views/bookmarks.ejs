@@ -1,0 +1,52 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/sidebar') %>
+
+  <main class="main-content" style="max-width:720px;margin:0 auto">
+
+    <!-- Header -->
+    <div style="margin-bottom:var(--space-6)">
+      <h1 style="font-family:var(--font-serif);font-size:1.75rem;font-weight:700;color:var(--text-primary);margin-bottom:var(--space-1)">Saved Posts</h1>
+      <p style="font-size:0.9375rem;color:var(--text-muted)">Posts you've bookmarked for later.</p>
+    </div>
+
+    <!-- Posts -->
+    <% if (posts && posts.length > 0) { %>
+
+      <!-- Stats bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);padding:var(--space-3) var(--space-4);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md)">
+        <span style="font-size:0.875rem;color:var(--text-muted)"><%= posts.length %> saved <%= posts.length === 1 ? 'post' : 'posts' %></span>
+        <a href="/explore" class="btn btn-ghost btn-sm">Discover more</a>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+        <% posts.forEach(post => { %>
+          <%- include('partials/post-card', { post }) %>
+        <% }); %>
+      </div>
+
+    <% } else { %>
+      <div class="empty-state card" style="padding:var(--space-12)">
+        <!-- Botanical illustration -->
+        <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto var(--space-4);opacity:0.5">
+          <path d="M50 80 Q50 50 30 30 Q50 40 60 20 Q65 40 80 35 Q70 55 50 80Z" fill="var(--botanical)" opacity="0.8"/>
+          <path d="M50 80 Q50 55 70 40 Q60 60 80 65 Q65 65 50 80Z" fill="var(--sage)" opacity="0.6"/>
+          <line x1="50" y1="80" x2="50" y2="90" stroke="var(--botanical-dark)" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="50" cy="93" r="3" fill="var(--botanical-dark)" opacity="0.5"/>
+        </svg>
+
+        <h3>Nothing saved yet</h3>
+        <p>Tap the bookmark icon on any post to save it here for later.</p>
+        <a href="/" class="btn btn-primary" style="margin-top:var(--space-5)">Browse your feed</a>
+      </div>
+    <% } %>
+
+  </main>
+
+  <%- include('partials/right-sidebar') %>
+</div>
+
+<script src="/js/theme.js"></script>
+<script src="/js/feed.js"></script>
+</body>
+</html>

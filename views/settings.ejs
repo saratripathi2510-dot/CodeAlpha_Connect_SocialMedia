@@ -1,0 +1,260 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/sidebar') %>
+
+  <main class="main-content">
+    <div style="max-width:860px;margin:0 auto">
+
+      <!-- Page Header -->
+      <div style="margin-bottom:var(--space-6)">
+        <h1 style="font-family:var(--font-serif);font-size:1.75rem;font-weight:700;color:var(--text-primary);margin-bottom:var(--space-1)">Settings</h1>
+        <p style="font-size:0.9375rem;color:var(--text-muted)">Manage your account preferences.</p>
+      </div>
+
+      <!-- Flash Messages -->
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="flash flash-error" role="alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+          <%= error %>
+        </div>
+      <% } %>
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="flash flash-success" role="alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <%= success %>
+        </div>
+      <% } %>
+
+      <div class="settings-layout">
+
+        <!-- Settings Nav -->
+        <nav class="settings-nav" aria-label="Settings sections">
+          <a href="/settings?section=profile" class="settings-nav-item <%= activeSection === 'profile' ? 'active' : '' %>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+            Profile
+          </a>
+          <a href="/settings?section=photos" class="settings-nav-item <%= activeSection === 'photos' ? 'active' : '' %>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Photos
+          </a>
+          <a href="/settings?section=appearance" class="settings-nav-item <%= activeSection === 'appearance' ? 'active' : '' %>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            Appearance
+          </a>
+          <a href="/settings?section=account" class="settings-nav-item <%= activeSection === 'account' ? 'active' : '' %>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Security
+          </a>
+          <a href="/settings?section=danger" class="settings-nav-item <%= activeSection === 'danger' ? 'active' : '' %>" style="color:var(--error)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Danger Zone
+          </a>
+        </nav>
+
+        <!-- Settings Content -->
+        <div>
+
+          <!-- ── Profile Section ── -->
+          <% if (activeSection === 'profile') { %>
+          <div class="card card-padded">
+            <h2 class="settings-section-title">Edit Profile</h2>
+            <p class="settings-section-desc">Update your public profile information.</p>
+
+            <form action="/settings/profile" method="POST">
+              <div class="form-group">
+                <label for="display_name" class="form-label">Display Name</label>
+                <input type="text" id="display_name" name="display_name" class="form-input" value="<%= currentUser.display_name %>" required maxlength="60">
+              </div>
+
+              <div class="form-group">
+                <label for="bio" class="form-label">Bio</label>
+                <textarea id="bio" name="bio" class="form-textarea" placeholder="Tell people about yourself..." maxlength="300" rows="4" data-autoresize><%= currentUser.bio || '' %></textarea>
+                <span class="form-hint">Up to 300 characters.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="location" class="form-label">Location</label>
+                <div class="input-group">
+                  <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <input type="text" id="location" name="location" class="form-input" value="<%= currentUser.location || '' %>" placeholder="City, Country" maxlength="80">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="website" class="form-label">Website</label>
+                <div class="input-group">
+                  <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <input type="url" id="website" name="website" class="form-input" value="<%= currentUser.website || '' %>" placeholder="https://yourwebsite.com">
+                </div>
+              </div>
+
+              <div style="display:flex;gap:var(--space-3);justify-content:flex-end;padding-top:var(--space-4);border-top:1px solid var(--border)">
+                <a href="/u/<%= currentUser.username %>" class="btn btn-ghost">View Profile</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- ── Photos Section ── -->
+          <% } else if (activeSection === 'photos') { %>
+          <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+
+            <!-- Avatar -->
+            <div class="card card-padded">
+              <h2 class="settings-section-title">Profile Photo</h2>
+              <p class="settings-section-desc">Your profile photo appears on your posts and profile.</p>
+              <div style="display:flex;align-items:center;gap:var(--space-5)">
+                <% if (currentUser.avatar_url) { %>
+                  <img src="<%= currentUser.avatar_url %>" alt="Current avatar" class="avatar avatar-xl" style="border:3px solid var(--border)">
+                <% } else { %>
+                  <div class="avatar avatar-xl avatar-placeholder" style="font-size:2rem"><%= currentUser.display_name.charAt(0).toUpperCase() %></div>
+                <% } %>
+                <form action="/settings/avatar" method="POST" enctype="multipart/form-data">
+                  <label class="btn btn-outline" style="cursor:pointer">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    Upload Photo
+                    <input type="file" name="avatar" accept="image/*" style="display:none" onchange="this.form.submit()">
+                  </label>
+                  <p class="form-hint" style="margin-top:var(--space-2)">JPG, PNG, WebP up to 5MB</p>
+                </form>
+              </div>
+            </div>
+
+            <!-- Cover -->
+            <div class="card card-padded">
+              <h2 class="settings-section-title">Cover Photo</h2>
+              <p class="settings-section-desc">A banner image that appears at the top of your profile.</p>
+              <div style="border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-4);height:140px;background:<%= currentUser.cover_url ? 'url(' + currentUser.cover_url + ') center/cover' : 'linear-gradient(135deg, var(--botanical), var(--sage))' %>"></div>
+              <form action="/settings/cover" method="POST" enctype="multipart/form-data">
+                <label class="btn btn-outline" style="cursor:pointer">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  Upload Cover Photo
+                  <input type="file" name="cover" accept="image/*" style="display:none" onchange="this.form.submit()">
+                </label>
+                <p class="form-hint" style="margin-top:var(--space-2)">JPG, PNG, WebP up to 10MB. Recommended: 1500×500px.</p>
+              </form>
+            </div>
+
+          </div>
+
+          <!-- ── Appearance Section ── -->
+          <% } else if (activeSection === 'appearance') { %>
+          <div class="card card-padded">
+            <h2 class="settings-section-title">Appearance</h2>
+            <p class="settings-section-desc">Choose how Connect looks for you.</p>
+
+            <div style="margin-bottom:var(--space-6)">
+              <p class="form-label" style="margin-bottom:var(--space-3)">Theme</p>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3)">
+                <button data-theme-btn="light" onclick="ConnectTheme.setTheme('light')" class="card card-padded" style="cursor:pointer;border:2px solid var(--border);text-align:center;transition:var(--transition-fast)">
+                  <div style="font-size:2rem;margin-bottom:var(--space-2)">☀️</div>
+                  <div style="font-weight:600;color:var(--text-primary)">Light</div>
+                </button>
+                <button data-theme-btn="dark" onclick="ConnectTheme.setTheme('dark')" class="card card-padded" style="cursor:pointer;border:2px solid var(--border);text-align:center;transition:var(--transition-fast)">
+                  <div style="font-size:2rem;margin-bottom:var(--space-2)">🌙</div>
+                  <div style="font-weight:600;color:var(--text-primary)">Dark</div>
+                </button>
+                <button data-theme-btn="system" onclick="ConnectTheme.setTheme('system')" class="card card-padded" style="cursor:pointer;border:2px solid var(--border);text-align:center;transition:var(--transition-fast)">
+                  <div style="font-size:2rem;margin-bottom:var(--space-2)">🖥️</div>
+                  <div style="font-weight:600;color:var(--text-primary)">System</div>
+                </button>
+              </div>
+            </div>
+
+            <div style="padding:var(--space-4);background:var(--bg-main);border-radius:var(--radius-md);border:1px solid var(--border)">
+              <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.6">
+                Your theme preference is stored locally in your browser and applies across all pages. <strong>System</strong> automatically matches your device's light/dark mode setting.
+              </p>
+            </div>
+          </div>
+
+          <!-- ── Security Section ── -->
+          <% } else if (activeSection === 'account') { %>
+          <div class="card card-padded">
+            <h2 class="settings-section-title">Change Password</h2>
+            <p class="settings-section-desc">Update your password regularly to keep your account secure.</p>
+
+            <form action="/settings/password" method="POST">
+              <div class="form-group">
+                <label for="current_password" class="form-label">Current Password</label>
+                <input type="password" id="current_password" name="current_password" class="form-input" placeholder="Enter your current password" required autocomplete="current-password">
+              </div>
+              <div class="form-group">
+                <label for="new_password" class="form-label">New Password</label>
+                <input type="password" id="new_password" name="new_password" class="form-input" placeholder="At least 6 characters" minlength="6" required autocomplete="new-password">
+              </div>
+              <div class="form-group">
+                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Repeat new password" required autocomplete="new-password">
+              </div>
+              <div style="display:flex;justify-content:flex-end;padding-top:var(--space-4);border-top:1px solid var(--border)">
+                <button type="submit" class="btn btn-primary">Update Password</button>
+              </div>
+            </form>
+
+            <!-- Account Info -->
+            <div style="margin-top:var(--space-6);padding-top:var(--space-5);border-top:1px solid var(--border)">
+              <h3 style="font-size:1rem;font-weight:600;color:var(--text-primary);margin-bottom:var(--space-3)">Account Info</h3>
+              <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+                <div style="display:flex;gap:var(--space-3)">
+                  <span style="font-size:0.875rem;color:var(--text-muted);width:100px">Username</span>
+                  <span style="font-size:0.875rem;color:var(--text-primary);font-weight:500">@<%= currentUser.username %></span>
+                </div>
+                <div style="display:flex;gap:var(--space-3)">
+                  <span style="font-size:0.875rem;color:var(--text-muted);width:100px">Email</span>
+                  <span style="font-size:0.875rem;color:var(--text-primary);font-weight:500"><%= currentUser.email %></span>
+                </div>
+                <div style="display:flex;gap:var(--space-3)">
+                  <span style="font-size:0.875rem;color:var(--text-muted);width:100px">Joined</span>
+                  <span style="font-size:0.875rem;color:var(--text-primary)"><%= formatDateFull(currentUser.created_at) %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Danger Zone ── -->
+          <% } else if (activeSection === 'danger') { %>
+          <div class="card card-padded" style="border-color:var(--error)">
+            <h2 class="settings-section-title" style="color:var(--error)">Danger Zone</h2>
+            <p class="settings-section-desc">These actions are permanent and cannot be undone.</p>
+
+            <div style="padding:var(--space-5);border:1px solid var(--error);border-radius:var(--radius-md);background:var(--error-bg)">
+              <h3 style="font-size:1rem;font-weight:600;color:var(--error);margin-bottom:var(--space-2)">Delete Account</h3>
+              <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:var(--space-4);line-height:1.6">
+                Permanently delete your account, all your posts, likes, comments, messages, and all associated data. <strong>This action cannot be reversed.</strong>
+              </p>
+              <form action="/settings/delete-account" method="POST" onsubmit="return confirm('This will PERMANENTLY delete your account and all data. Are you absolutely sure?')">
+                <div class="form-group" style="margin-bottom:var(--space-3)">
+                  <label for="delete_password" class="form-label">Confirm Password</label>
+                  <input type="password" id="delete_password" name="password" class="form-input" placeholder="Enter your password to confirm" required>
+                </div>
+                <button type="submit" class="btn btn-danger">Delete My Account Forever</button>
+              </form>
+            </div>
+          </div>
+          <% } %>
+
+        </div><!-- /.settings-content -->
+      </div><!-- /.settings-layout -->
+    </div><!-- /max-width wrapper -->
+  </main>
+
+  <%- include('partials/right-sidebar') %>
+</div>
+
+<script src="/js/theme.js"></script>
+<script src="/js/feed.js"></script>
+<script>
+  // Highlight active theme button
+  document.addEventListener('DOMContentLoaded', () => {
+    const stored = localStorage.getItem('connect-theme') || 'system';
+    document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+      if (btn.dataset.themeBtn === stored) {
+        btn.style.borderColor = 'var(--sage)';
+        btn.style.boxShadow = '0 0 0 2px rgba(113,139,104,0.3)';
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/sidebar') %>
+
+  <main class="main-content" style="max-width:680px;margin:0 auto">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5)">
+      <div>
+        <h1 style="font-family:var(--font-serif);font-size:1.75rem;font-weight:700;color:var(--text-primary);margin-bottom:var(--space-1)">Notifications</h1>
+        <p style="font-size:0.9375rem;color:var(--text-muted)">Stay up to date with your activity.</p>
+      </div>
+      <% if (notifications && notifications.some(n => !n.read_at)) { %>
+      <form action="/notifications/read-all" method="POST">
+        <button type="submit" class="btn btn-ghost btn-sm">Mark all read</button>
+      </form>
+      <% } %>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="card" style="overflow:hidden">
+      <% if (notifications && notifications.length > 0) { %>
+        <% notifications.forEach((notif, idx) => { %>
+          <% if (idx > 0) { %><div class="divider" style="margin:0"></div><% } %>
+
+          <%
+            let icon = '🔔';
+            let actionText = '';
+            let link = '#';
+            if (notif.type === 'like') {
+              icon = '❤️';
+              actionText = 'liked your post';
+              link = notif.post_id ? `/posts/${notif.post_id}` : '#';
+            } else if (notif.type === 'comment') {
+              icon = '💬';
+              actionText = 'commented on your post';
+              link = notif.post_id ? `/posts/${notif.post_id}#comments` : '#';
+            } else if (notif.type === 'follow') {
+              icon = '👤';
+              actionText = 'started following you';
+              link = `/u/${notif.actor_username}`;
+            } else if (notif.type === 'mention') {
+              icon = '📢';
+              actionText = 'mentioned you';
+              link = notif.post_id ? `/posts/${notif.post_id}` : '#';
+            }
+          %>
+
+          <a href="<%= link %>" class="notification-item <%= !notif.read_at ? 'unread' : '' %>" style="text-decoration:none;display:flex">
+            <!-- Avatar + icon -->
+            <div style="position:relative;flex-shrink:0">
+              <% if (notif.actor_avatar_url) { %>
+                <img src="<%= notif.actor_avatar_url %>" alt="<%= notif.actor_display_name %>" class="avatar avatar-md">
+              <% } else { %>
+                <div class="avatar avatar-md avatar-placeholder"><%= notif.actor_display_name.charAt(0).toUpperCase() %></div>
+              <% } %>
+              <span style="position:absolute;bottom:-2px;right:-2px;font-size:0.75rem;line-height:1"><%= icon %></span>
+            </div>
+
+            <!-- Text -->
+            <div class="notification-content">
+              <p class="notification-text">
+                <strong style="color:var(--text-primary)"><%= notif.actor_display_name %></strong>
+                <%= actionText %>
+                <% if (notif.post_content) { %>
+                  — <span style="color:var(--text-muted);font-style:italic">"<%= notif.post_content.substring(0, 60) %><%= notif.post_content.length > 60 ? '...' : '' %>"</span>
+                <% } %>
+              </p>
+              <time class="notification-time" datetime="<%= notif.created_at %>"><%= formatDate(notif.created_at) %></time>
+            </div>
+
+            <!-- Post thumbnail -->
+            <% if (notif.post_media_url) { %>
+              <img src="<%= notif.post_media_url %>" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;margin-left:auto">
+            <% } %>
+
+            <!-- Unread indicator -->
+            <% if (!notif.read_at) { %>
+              <div class="notification-dot" style="margin-left:var(--space-2)"></div>
+            <% } %>
+          </a>
+        <% }); %>
+
+      <% } else { %>
+        <div class="empty-state" style="padding:var(--space-12)">
+          <div class="empty-icon">🌿</div>
+          <h3>No notifications yet</h3>
+          <p>When people like, comment on, or follow you, you'll see it here.</p>
+        </div>
+      <% } %>
+    </div>
+
+  </main>
+
+  <%- include('partials/right-sidebar') %>
+</div>
+
+<script src="/js/theme.js"></script>
+<script src="/js/feed.js"></script>
+</body>
+</html>

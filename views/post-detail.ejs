@@ -1,0 +1,169 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/sidebar') %>
+
+  <main class="main-content" style="max-width:700px;margin:0 auto">
+
+    <!-- Back button -->
+    <a href="javascript:history.back()" class="btn btn-ghost btn-sm" style="margin-bottom:var(--space-4);display:inline-flex">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      Back
+    </a>
+
+    <!-- Post Card (detailed) -->
+    <article class="card" style="margin-bottom:var(--space-4);overflow:hidden">
+
+      <!-- Author -->
+      <header style="display:flex;align-items:flex-start;justify-content:space-between;padding:var(--space-5)">
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <a href="/u/<%= post.username %>">
+            <% if (post.avatar_url) { %>
+              <img src="<%= post.avatar_url %>" alt="<%= post.display_name %>" class="avatar avatar-lg">
+            <% } else { %>
+              <div class="avatar avatar-lg avatar-placeholder"><%= post.display_name.charAt(0).toUpperCase() %></div>
+            <% } %>
+          </a>
+          <div>
+            <a href="/u/<%= post.username %>" style="font-size:1rem;font-weight:700;color:var(--text-primary);text-decoration:none;display:block"><%= post.display_name %></a>
+            <div style="font-size:0.875rem;color:var(--text-muted)">@<%= post.username %></div>
+            <time datetime="<%= post.created_at %>" style="font-size:0.8125rem;color:var(--text-muted)"><%= formatDateFull(post.created_at) %></time>
+          </div>
+        </div>
+
+        <% if (currentUser && currentUser.id === post.user_id) { %>
+        <div class="dropdown">
+          <button class="btn btn-icon btn-ghost" data-dropdown-trigger aria-label="Post options">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+            </svg>
+          </button>
+          <div class="dropdown-menu">
+            <form action="/posts/<%= post.id %>/delete" method="POST" onsubmit="return confirm('Delete this post?')">
+              <button type="submit" class="dropdown-item danger">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                Delete Post
+              </button>
+            </form>
+          </div>
+        </div>
+        <% } %>
+      </header>
+
+      <!-- Content -->
+      <div style="padding:0 var(--space-5) var(--space-5)">
+        <p style="font-size:1.0625rem;line-height:1.7;color:var(--text-primary);white-space:pre-wrap;word-break:break-word"><%= post.content %></p>
+      </div>
+
+      <!-- Media -->
+      <% if (post.media_url) { %>
+        <% if (post.media_type === 'video') { %>
+          <video src="<%= post.media_url %>" class="post-media" controls style="max-height:600px"></video>
+        <% } else { %>
+          <img src="<%= post.media_url %>" alt="Post media" class="post-media" style="max-height:600px;object-fit:contain;background:var(--bg-hover)">
+        <% } %>
+      <% } %>
+
+      <!-- Engagement stats -->
+      <div style="display:flex;gap:var(--space-5);padding:var(--space-4) var(--space-5);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+        <span style="font-size:0.9375rem;color:var(--text-secondary)"><strong style="color:var(--text-primary)"><%= post.like_count %></strong> Likes</span>
+        <span style="font-size:0.9375rem;color:var(--text-secondary)"><strong style="color:var(--text-primary)"><%= post.comment_count %></strong> Comments</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="post-card-actions" style="padding:var(--space-2) var(--space-4)">
+        <button class="action-btn like-btn <%= post.is_liked ? 'liked' : '' %>" data-post-id="<%= post.id %>" aria-label="<%= post.is_liked ? 'Unlike' : 'Like' %>">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="<%= post.is_liked ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span class="count"><%= post.like_count %></span>
+          Like
+        </button>
+        <button class="action-btn bookmark-btn <%= post.is_bookmarked ? 'bookmarked' : '' %>" data-post-id="<%= post.id %>" aria-label="Bookmark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="<%= post.is_bookmarked ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          Bookmark
+        </button>
+        <button class="action-btn" onclick="navigator.clipboard.writeText(window.location.href).then(()=>this.textContent='✓ Copied!')" aria-label="Share">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+      </div>
+    </article>
+
+    <!-- Comments Section -->
+    <section id="comments" aria-label="Comments">
+      <h2 style="font-size:1.125rem;font-weight:700;color:var(--text-primary);margin-bottom:var(--space-4)">
+        Comments <span style="color:var(--text-muted);font-weight:400;font-size:1rem">(<%= comments.length %>)</span>
+      </h2>
+
+      <!-- Comment Composer -->
+      <div class="card card-padded" style="margin-bottom:var(--space-4)">
+        <form action="/posts/<%= post.id %>/comments" method="POST">
+          <div style="display:flex;gap:var(--space-3)">
+            <% if (currentUser && currentUser.avatar_url) { %>
+              <img src="<%= currentUser.avatar_url %>" alt="" class="avatar avatar-md" style="margin-top:2px">
+            <% } else { %>
+              <div class="avatar avatar-md avatar-placeholder" style="margin-top:2px"><%= currentUser ? currentUser.display_name.charAt(0).toUpperCase() : 'U' %></div>
+            <% } %>
+            <div style="flex:1">
+              <textarea
+                name="content"
+                class="form-textarea"
+                placeholder="Write a comment..."
+                rows="2"
+                maxlength="500"
+                data-autoresize
+                required
+                style="margin-bottom:var(--space-3)"
+              ></textarea>
+              <div style="display:flex;justify-content:flex-end">
+                <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Comments List -->
+      <% if (comments && comments.length > 0) { %>
+        <div style="display:flex;flex-direction:column">
+          <% comments.forEach(comment => { %>
+          <div class="comment-item">
+            <a href="/u/<%= comment.username %>">
+              <% if (comment.avatar_url) { %>
+                <img src="<%= comment.avatar_url %>" alt="" class="avatar avatar-sm">
+              <% } else { %>
+                <div class="avatar avatar-sm avatar-placeholder" style="font-size:0.75rem"><%= comment.display_name.charAt(0).toUpperCase() %></div>
+              <% } %>
+            </a>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <a href="/u/<%= comment.username %>" class="comment-author" style="text-decoration:none"><%= comment.display_name %></a>
+                <span style="color:var(--text-muted);font-size:0.75rem">·</span>
+                <time class="comment-time" datetime="<%= comment.created_at %>"><%= formatDate(comment.created_at) %></time>
+                <% if (currentUser && currentUser.id === comment.user_id) { %>
+                  <form action="/comments/<%= comment.id %>/delete" method="POST" style="margin-left:auto" onsubmit="return confirm('Delete comment?')">
+                    <button type="submit" class="btn-ghost" style="border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:0.75rem;padding:0 4px" aria-label="Delete comment">✕</button>
+                  </form>
+                <% } %>
+              </div>
+              <p class="comment-text"><%= comment.content %></p>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="empty-state" style="padding:var(--space-8) var(--space-4)">
+          <div class="empty-icon" style="font-size:2rem">💬</div>
+          <h3>No comments yet</h3>
+          <p>Start the conversation.</p>
+        </div>
+      <% } %>
+    </section>
+
+  </main>
+
+  <%- include('partials/right-sidebar') %>
+</div>
+
+<script src="/js/theme.js"></script>
+<script src="/js/feed.js"></script>
+</body>
+</html>
