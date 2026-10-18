@@ -1,8 +1,8 @@
 # Connect
 
-> **Good People. Better Conversations.**
+**Good People. Better Conversations.**
 
-A full-featured social media web app built with Node.js, Express, SQLite, and EJS — styled with the **Sage Garden** design palette.
+A full-featured social media web application built with Node.js, Express.js, SQLite, and EJS, featuring a clean **Sage Garden** design palette.
 
 ## Quick Start
 
@@ -11,68 +11,64 @@ npm install
 npm start
 ```
 
-Open **http://localhost:3000** in your browser.
+Open `http://localhost:3000` in your browser.
 
 ## Features
 
 | Feature | Status |
-|---------|--------|
-| Register / Login / Logout | ✅ |
-| Create & delete posts | ✅ |
-| Image/video uploads | ✅ |
-| Like posts (AJAX) | ✅ |
-| Bookmark posts (AJAX) | ✅ |
+|---|---|
+| Register, login, and logout | ✅ |
+| Create and delete posts | ✅ |
+| Image and video uploads | ✅ |
+| Like and bookmark posts | ✅ |
 | Comments | ✅ |
-| Follow / Unfollow users | ✅ |
-| Home feed (followed users) | ✅ |
-| Story circles | ✅ |
-| Explore / Search | ✅ |
+| Follow and unfollow users | ✅ |
+| Home feed | ✅ |
+| Stories | ✅ |
+| Explore and search | ✅ |
 | User profiles | ✅ |
 | Direct messages | ✅ |
 | Notifications | ✅ |
 | Bookmarks page | ✅ |
-| Settings (profile, photos, password, theme) | ✅ |
-| Light / Dark / System theme | ✅ |
+| Profile and account settings | ✅ |
+| Light, dark, and system themes | ✅ |
 | Responsive mobile layout | ✅ |
-| 404 / 500 error pages | ✅ |
+| Custom error pages | ✅ |
 
 ## Tech Stack
 
-- **Backend**: Node.js + Express.js
-- **Database**: SQLite via `better-sqlite3`
-- **Templates**: EJS
-- **Auth**: Sessions + bcryptjs
-- **Uploads**: Multer
-- **Fonts**: Playfair Display (serif headings) + Inter (sans-serif body)
+- **Frontend:** HTML, CSS, JavaScript
+- **Backend:** Node.js and Express.js
+- **Database:** SQLite with `better-sqlite3`
+- **Templates:** EJS
+- **Authentication:** Sessions and `bcryptjs`
+- **File uploads:** Multer
 
-## Design System — Sage Garden Palette
+## Design System — Sage Garden
 
-| Token | Light | Dark |
-|-------|-------|------|
-| Background | `#FAF5EE` | `#171D1B` |
-| Card | `#FFFDF9` | `#222B27` |
-| Sage Green | `#718B68` | `#A8C39A` |
-| Forest Green | `#354A38` | `#C8D5B9` |
-| Soft Peach | `#F5C8B8` | `#F0A99A` |
-| Text Primary | `#282D28` | `#F7F3EB` |
+The interface uses a nature-inspired palette with sage green, forest green, soft peach, warm cream, and dark-mode colors.
 
 ## Project Structure
 
-```
+```text
 Connect/
-├── server.js           # Express app
+├── server.js
 ├── database/
-│   ├── schema.sql      # SQLite schema
-│   └── db.js           # DB connection
+│   ├── schema.sql
+│   └── db.js
 ├── middleware/
-│   └── auth.js         # Auth guards
-├── routes/             # All route handlers
+│   └── auth.js
+├── routes/
 ├── public/
-│   ├── css/            # Design tokens, base, components, layout, fixes
-│   ├── js/             # Theme switcher, feed interactions, messages
-│   └── images/         # Static assets
+│   ├── css/
+│   ├── js/
+│   └── images/
 └── views/
-    ├── partials/       # head, sidebar, right-sidebar, post-card
-    ├── auth/           # login, register
-    └── *.ejs           # All page views
+    ├── partials/
+    ├── auth/
+    └── *.ejs
 ```
+
+## About
+
+Connect is a mini social media platform where users can create profiles, share posts, interact through likes and comments, and follow other users. It focuses on a clean, responsive interface and an engaging social experience.
