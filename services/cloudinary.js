@@ -30,7 +30,53 @@ function isCloudinaryConfigured() {
 }
 
 /**
- * Upload a file buffer to Cloudinary (with fallback to local storage if Cloudinary is not configured)
+ * Validates Cloudinary configuration on server startup.
+ * In production (Render), missing keys throw an immediate fatal error to prevent silent local fallback.
+ */
+function validateCloudinaryConfig() {
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (!isProduction) return;
+
+  const hasCloudinaryUrl = Boolean(process.env.CLOUDINARY_URL);
+  const hasIndividualKeys = Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  );
+
+  if (!hasCloudinaryUrl && !hasIndividualKeys) {
+    const missing = [];
+    if (!process.env.CLOUDINARY_CLOUD_NAME) missing.push('CLOUDINARY_CLOUD_NAME');
+    if (!process.env.CLOUDINARY_API_KEY) missing.push('CLOUDINARY_API_KEY');
+    if (!process.env.CLOUDINARY_API_SECRET) missing.push('CLOUDINARY_API_SECRET');
+
+    const errorMessage = [
+      '\n=================================================================================',
+      '🚨 FATAL ERROR: Cloudinary credentials are MISSING in production environment!',
+      '---------------------------------------------------------------------------------',
+      'Render uses an ephemeral disk — all local uploads (/uploads/*) will be deleted on',
+      'every deploy and container restart.',
+      '',
+      `Missing environment variable(s): ${missing.join(', ')} (or CLOUDINARY_URL)`,
+      '',
+      'Action required:',
+      '1. Open your Render Dashboard -> Select this Web Service -> Environment tab.',
+      '2. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.',
+      '=================================================================================\n'
+    ].join('\n');
+
+    console.error(errorMessage);
+    throw new Error(`[Cloudinary Config Error] Missing production environment variables: ${missing.join(', ')}`);
+  }
+}
+
+// Run validation immediately on module load if in production
+validateCloudinaryConfig();
+
+/**
+ * Upload a file buffer to Cloudinary.
+ * In production, this strictly requires Cloudinary.
+ * In development, it falls back to local disk storage if keys are absent.
  * @param {Buffer} buffer - File buffer from multer memoryStorage
  * @param {Object} options - { folder, resource_type, originalname }
  * @returns {Promise<{ url: string, public_id: string|null, resource_type: string }>}
@@ -38,6 +84,7 @@ function isCloudinaryConfigured() {
 function uploadMedia(buffer, options = {}) {
   const folder = options.folder || 'connect/media';
   const resource_type = options.resource_type || 'auto';
+  const isProduction = process.env.NODE_ENV === 'production';
 
   // If Cloudinary is configured, stream upload to Cloudinary
   if (isCloudinaryConfigured()) {
@@ -65,7 +112,14 @@ function uploadMedia(buffer, options = {}) {
     });
   }
 
-  // Graceful fallback for local development if Cloudinary credentials are not provided
+  // In production, NEVER silently fallback to local storage
+  if (isProduction) {
+    const errorMsg = 'Production upload failed: Cloudinary credentials are not configured.';
+    console.error(`🚨 ${errorMsg}`);
+    return Promise.reject(new Error(errorMsg));
+  }
+
+  // Graceful fallback ONLY for local offline development
   console.warn('⚠️ Cloudinary credentials not detected; falling back to local disk storage in public/uploads.');
   const subFolder = folder.replace(/^connect\/?/, '') || 'misc';
   const localDir = path.join(__dirname, '../public/uploads', subFolder);
@@ -97,8 +151,6 @@ async function deleteMedia(mediaUrl, resourceType = 'image') {
   try {
     // If it's a Cloudinary URL
     if (mediaUrl.includes('cloudinary.com') || mediaUrl.includes('res.cloudinary.com')) {
-      // Extract public_id from Cloudinary URL
-      // Example: https://res.cloudinary.com/<cloud>/image/upload/v12345/connect/posts/abc123.jpg
       const matches = mediaUrl.match(/\/upload\/(?:v\d+\/)?([^\.]+)/);
       if (matches && matches[1]) {
         const publicId = matches[1];
@@ -107,7 +159,6 @@ async function deleteMedia(mediaUrl, resourceType = 'image') {
         });
       }
     } else if (mediaUrl.startsWith('/uploads/')) {
-      // Local file removal
       const localPath = path.join(__dirname, '../public', mediaUrl);
       if (fs.existsSync(localPath)) {
         fs.unlinkSync(localPath);
@@ -121,6 +172,7 @@ async function deleteMedia(mediaUrl, resourceType = 'image') {
 module.exports = {
   cloudinary,
   isCloudinaryConfigured,
+  validateCloudinaryConfig,
   uploadMedia,
   deleteMedia
 };

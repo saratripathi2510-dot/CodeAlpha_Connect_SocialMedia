@@ -2,16 +2,22 @@ require('dotenv').config();
 
 const express = require('express');
 const session = require('express-session');
+const SqliteStore = require('better-sqlite3-session-store')(session);
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
+const db = require('./database/db');
+const { validateCloudinaryConfig } = require('./services/cloudinary');
 
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const isProduction = process.env.NODE_ENV === 'production';
+
+// Fail fast on server startup if Cloudinary credentials are missing in production
+validateCloudinaryConfig();
 
 // Render runs behind a reverse proxy (HTTPS SSL termination)
 // trust proxy is REQUIRED for secure cookies and rate-limiting by real client IP
@@ -89,19 +95,25 @@ if (isProduction && !process.env.SESSION_SECRET) {
 }
 
 app.use(session({
+  store: new SqliteStore({
+    client: db,
+    expired: {
+      clear: true,
+      intervalMs: 15 * 60 * 1000 // Automatically clean up expired sessions every 15 minutes
+    }
+  }),
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: isProduction, // HTTPS required in production
     httpOnly: true, // Prevents client-side script cookie theft
-    sameSite: isProduction ? 'lax' : 'lax', // CSRF protection
+    sameSite: 'lax', // CSRF protection
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
   }
 }));
 
-// ─── Database & User Injection ──────────────────────────────────────────────
-const db = require('./database/db');
+// ─── User Injection ─────────────────────────────────────────────────────────
 
 app.use((req, res, next) => {
   if (req.session.userId) {
