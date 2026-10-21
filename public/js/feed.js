@@ -3,6 +3,8 @@
  * Handles like, bookmark, follow, dropdown, media preview, character count.
  */
 document.addEventListener('DOMContentLoaded', () => {
+  const API_BASE = (window.API_BASE_URL || document.querySelector('meta[name="api-base-url"]')?.getAttribute('content') || '').replace(/\/$/, '');
+  const apiUrl = (path) => `${API_BASE}${path}`;
 
   // ── Like Button ─────────────────────────────────────────────────────────
   document.querySelectorAll('.like-btn').forEach(btn => {
@@ -13,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = true;
 
       try {
-        const res = await fetch(`/posts/${postId}/like`, { method: 'POST' });
+        const res = await fetch(apiUrl(`/posts/${postId}/like`), { method: 'POST' });
         const data = await res.json();
         btn.classList.toggle('liked', data.liked);
         if (countEl) countEl.textContent = data.count;
@@ -40,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = true;
 
       try {
-        const res = await fetch(`/posts/${postId}/bookmark`, { method: 'POST' });
+        const res = await fetch(apiUrl(`/posts/${postId}/bookmark`), { method: 'POST' });
         const data = await res.json();
         btn.classList.toggle('bookmarked', data.bookmarked);
 
@@ -133,8 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function pollCounts() {
     try {
       const [notifRes, msgRes] = await Promise.all([
-        fetch('/api/notifications/count'),
-        fetch('/api/messages/count')
+        fetch(apiUrl('/api/notifications/count')),
+        fetch(apiUrl('/api/messages/count'))
       ]);
       const notifData = await notifRes.json();
       const msgData = await msgRes.json();

@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: connect-social-media
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_PATH
+        value: ./database/connect.db
+      - key: CLIENT_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: API_BASE_URL
+        sync: false
+
+    # NOTE FOR SQLITE PERSISTENCE:
+    # Render's free tier uses an ephemeral disk. To persist SQLite between deploys and sleep cycles,
+    # you can attach a Render Persistent Disk (available on Starter plan or above):
+    # disk:
+    #   name: connect-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # Then set DATABASE_PATH to /var/data/connect.db

@@ -2,31 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 const { requireAuth } = require('../middleware/auth');
-const path = require('path');
-const fs = require('fs');
-const multer = require('multer');
-
-// Configure multer for post media uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../public/uploads');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}${ext}`);
-  }
-});
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|gif|webp|mp4|mov/;
-    if (allowed.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Only images and videos are allowed.'));
-  }
-});
+const { postUpload } = require('../middleware/upload');
+const { uploadMedia, deleteMedia } = require('../services/cloudinary');
 
 function getCurrentUser(userId) {
   return db.prepare('SELECT id, username, display_name, avatar_url FROM users WHERE id = ?').get(userId);
@@ -42,7 +19,7 @@ function createNotification(userId, actorId, type, postId = null) {
 }
 
 // POST /posts — Create post
-router.post('/posts', requireAuth, upload.single('media'), (req, res) => {
+router.post('/posts', requireAuth, postUpload.single('media'), async (req, res) => {
   const { content } = req.body;
   if (!content || !content.trim()) {
     return res.redirect('/');
@@ -50,14 +27,25 @@ router.post('/posts', requireAuth, upload.single('media'), (req, res) => {
 
   let media_url = null;
   let media_type = null;
-  if (req.file) {
-    media_url = '/uploads/' + req.file.filename;
-    media_type = req.file.mimetype.startsWith('video') ? 'video' : 'image';
-  }
 
-  db.prepare(
-    'INSERT INTO posts (user_id, content, media_url, media_type) VALUES (?, ?, ?, ?)'
-  ).run(req.session.userId, content.trim(), media_url, media_type);
+  try {
+    if (req.file) {
+      media_type = req.file.mimetype.startsWith('video') ? 'video' : 'image';
+      const uploadResult = await uploadMedia(req.file.buffer, {
+        folder: 'connect/posts',
+        resource_type: media_type === 'video' ? 'video' : 'image',
+        originalname: req.file.originalname
+      });
+      media_url = uploadResult.url;
+    }
+
+    db.prepare(
+      'INSERT INTO posts (user_id, content, media_url, media_type) VALUES (?, ?, ?, ?)'
+    ).run(req.session.userId, content.trim(), media_url, media_type);
+  } catch (err) {
+    console.error('Post creation upload error:', err);
+    req.session.flash_error = 'Failed to upload media. Please try again.';
+  }
 
   res.redirect('/');
 });
@@ -96,14 +84,13 @@ router.get('/posts/:id', requireAuth, (req, res) => {
 });
 
 // DELETE /posts/:id — Delete post
-router.post('/posts/:id/delete', requireAuth, (req, res) => {
+router.post('/posts/:id/delete', requireAuth, async (req, res) => {
   const post = db.prepare('SELECT * FROM posts WHERE id = ? AND user_id = ?').get(req.params.id, req.session.userId);
   if (!post) return res.status(403).json({ error: 'Forbidden' });
 
-  // Delete media file if exists
+  // Delete media file from Cloudinary / local storage
   if (post.media_url) {
-    const filePath = path.join(__dirname, '../public', post.media_url);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    await deleteMedia(post.media_url, post.media_type || 'image');
   }
 
   db.prepare('DELETE FROM posts WHERE id = ?').run(req.params.id);

@@ -1,61 +1,106 @@
+require('dotenv').config();
+
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const fs = require('fs');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
+const isProduction = process.env.NODE_ENV === 'production';
 
-// ─── View Engine ────────────────────────────────────────────────────────────
-// Simple template engine using HTML files with {{ }} placeholders
-// We'll use a custom lightweight renderer to avoid adding dependencies.
-// Actually, let's use a proper approach with string replacement.
+// Render runs behind a reverse proxy (HTTPS SSL termination)
+// trust proxy is REQUIRED for secure cookies and rate-limiting by real client IP
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
 
-// Custom template renderer
-const viewsDir = path.join(__dirname, 'views');
-
-function renderView(viewPath, data = {}) {
-  let html = fs.readFileSync(viewPath, 'utf8');
-
-  // Include partials: {{> partial_name}}
-  html = html.replace(/\{\{>\s*(\S+)\s*\}\}/g, (match, partialName) => {
-    const partialPath = path.join(viewsDir, 'partials', `${partialName}.html`);
-    if (fs.existsSync(partialPath)) {
-      let partial = fs.readFileSync(partialPath, 'utf8');
-      return partial;
+// ─── Security: Helmet ───────────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https://res.cloudinary.com", "https://*.cloudinary.com"],
+      mediaSrc: ["'self'", "data:", "blob:", "https://res.cloudinary.com", "https://*.cloudinary.com"],
+      connectSrc: ["'self'", ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(s => s.trim()) : [])]
     }
-    return '';
-  });
+  },
+  crossOriginEmbedderPolicy: false
+}));
 
-  // Replace variables: {{varName}}
-  html = html.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-    return data[key] !== undefined ? escapeHtml(String(data[key])) : '';
-  });
+// ─── Security: CORS ─────────────────────────────────────────────────────────
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map(s => s.trim())
+  : ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
-  return html;
-}
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow server-rendered requests, curl, mobile apps without Origin header
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    return callback(new Error('Blocked by CORS policy'));
+  },
+  credentials: true
+}));
 
-function escapeHtml(str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-}
+// ─── Security: Rate Limiting ────────────────────────────────────────────────
+// General rate limiter for general browsing: 300 requests per 15 minutes per IP
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  message: 'Too many requests from this IP. Please try again after 15 minutes.',
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use(generalLimiter);
 
-// ─── Middleware ──────────────────────────────────────────────────────────────
+// Stricter rate limiter for authentication routes to prevent brute-force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: 'Too many login or registration attempts. Please try again after 15 minutes.',
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use('/login', authLimiter);
+app.use('/register', authLimiter);
+
+// ─── Parsers & Static Files ─────────────────────────────────────────────────
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ─── Session Setup ──────────────────────────────────────────────────────────
+const sessionSecret = process.env.SESSION_SECRET || (isProduction
+  ? 'connect-prod-secret-' + (process.env.RENDER_SERVICE_ID || 'fallback-salt-2024')
+  : 'connect-sage-garden-secret-2024');
+
+if (isProduction && !process.env.SESSION_SECRET) {
+  console.warn('⚠️  WARNING: SESSION_SECRET is not set in environment variables! Please configure it in your Render Dashboard.');
+}
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'connect-sage-garden-secret-2024',
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // set true in production with HTTPS
+    secure: isProduction, // HTTPS required in production
+    httpOnly: true, // Prevents client-side script cookie theft
+    sameSite: isProduction ? 'lax' : 'lax', // CSRF protection
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
   }
 }));
 
-// Inject current user into all responses
+// ─── Database & User Injection ──────────────────────────────────────────────
 const db = require('./database/db');
 
 app.use((req, res, next) => {
@@ -78,22 +123,14 @@ app.use((req, res, next) => {
 });
 
 // ─── Template Engine Setup ───────────────────────────────────────────────────
-// Using EJS for proper template rendering
-// Install ejs if not already present
-try {
-  require('ejs');
-} catch(e) {
-  console.error('EJS not found. Run: npm install ejs');
-  process.exit(1);
-}
-
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Make helpers available to all views
+// Make view helpers and config available to all templates
 app.use((req, res, next) => {
   res.locals.session = req.session;
   res.locals.path = req.path;
+  res.locals.apiBaseUrl = process.env.API_BASE_URL || '';
   res.locals.formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -119,10 +156,19 @@ app.use((req, res, next) => {
   };
   res.locals.avatarUrl = (user) => {
     if (user && user.avatar_url) return user.avatar_url;
-    const name = user ? (user.display_name || user.username || 'U') : 'U';
     return `/images/avatar-placeholder.svg`;
   };
   next();
+});
+
+// ─── Health Check Endpoint for Render ────────────────────────────────────────
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    environment: process.env.NODE_ENV || 'development',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
 });
 
 // ─── Routes ─────────────────────────────────────────────────────────────────
@@ -157,8 +203,9 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start Server ────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🌿 Connect is running at http://localhost:${PORT}\n`);
+// Listen on HOST (0.0.0.0) and PORT specified by Render
+app.listen(PORT, HOST, () => {
+  console.log(`\n🌿 Connect is running at http://${HOST}:${PORT} [NODE_ENV: ${process.env.NODE_ENV || 'development'}]\n`);
 });
 
 module.exports = app;

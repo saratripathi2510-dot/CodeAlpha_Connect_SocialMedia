@@ -3,49 +3,8 @@ const router = express.Router();
 const db = require('../database/db');
 const { requireAuth } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-// Avatar upload config
-const avatarStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, '../public/uploads/avatars');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `avatar_${req.session.userId}_${Date.now()}${ext}`);
-  }
-});
-const coverStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, '../public/uploads/covers');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `cover_${req.session.userId}_${Date.now()}${ext}`);
-  }
-});
-const avatarUpload = multer({
-  storage: avatarStorage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (/jpeg|jpg|png|gif|webp/.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Only image files allowed'));
-  }
-});
-const coverUpload = multer({
-  storage: coverStorage,
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (/jpeg|jpg|png|gif|webp/.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Only image files allowed'));
-  }
-});
+const { avatarUpload, coverUpload } = require('../middleware/upload');
+const { uploadMedia, deleteMedia } = require('../services/cloudinary');
 
 function getCurrentUser(userId) {
   return db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
@@ -82,43 +41,63 @@ router.post('/settings/profile', requireAuth, (req, res) => {
 });
 
 // POST /settings/avatar — Update avatar
-router.post('/settings/avatar', requireAuth, avatarUpload.single('avatar'), (req, res) => {
+router.post('/settings/avatar', requireAuth, avatarUpload.single('avatar'), async (req, res) => {
   if (!req.file) {
     req.session.flash_error = 'Please select an image file.';
     return res.redirect('/settings');
   }
 
-  const avatarUrl = '/uploads/avatars/' + req.file.filename;
+  try {
+    const user = db.prepare('SELECT avatar_url FROM users WHERE id = ?').get(req.session.userId);
 
-  // Delete old avatar if exists
-  const user = db.prepare('SELECT avatar_url FROM users WHERE id = ?').get(req.session.userId);
-  if (user.avatar_url && user.avatar_url.startsWith('/uploads/')) {
-    const oldPath = path.join(__dirname, '../public', user.avatar_url);
-    if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    const uploadResult = await uploadMedia(req.file.buffer, {
+      folder: 'connect/avatars',
+      resource_type: 'image',
+      originalname: req.file.originalname
+    });
+
+    // Delete old avatar if exists
+    if (user && user.avatar_url) {
+      await deleteMedia(user.avatar_url, 'image');
+    }
+
+    db.prepare('UPDATE users SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(uploadResult.url, req.session.userId);
+    req.session.flash_success = 'Profile photo updated.';
+  } catch (err) {
+    console.error('Avatar upload error:', err);
+    req.session.flash_error = 'Failed to upload profile photo.';
   }
 
-  db.prepare('UPDATE users SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(avatarUrl, req.session.userId);
-  req.session.flash_success = 'Profile photo updated.';
   res.redirect('/settings');
 });
 
 // POST /settings/cover — Update cover photo
-router.post('/settings/cover', requireAuth, coverUpload.single('cover'), (req, res) => {
+router.post('/settings/cover', requireAuth, coverUpload.single('cover'), async (req, res) => {
   if (!req.file) {
     req.session.flash_error = 'Please select an image file.';
     return res.redirect('/settings');
   }
 
-  const coverUrl = '/uploads/covers/' + req.file.filename;
+  try {
+    const user = db.prepare('SELECT cover_url FROM users WHERE id = ?').get(req.session.userId);
 
-  const user = db.prepare('SELECT cover_url FROM users WHERE id = ?').get(req.session.userId);
-  if (user.cover_url && user.cover_url.startsWith('/uploads/')) {
-    const oldPath = path.join(__dirname, '../public', user.cover_url);
-    if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    const uploadResult = await uploadMedia(req.file.buffer, {
+      folder: 'connect/covers',
+      resource_type: 'image',
+      originalname: req.file.originalname
+    });
+
+    if (user && user.cover_url) {
+      await deleteMedia(user.cover_url, 'image');
+    }
+
+    db.prepare('UPDATE users SET cover_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(uploadResult.url, req.session.userId);
+    req.session.flash_success = 'Cover photo updated.';
+  } catch (err) {
+    console.error('Cover photo upload error:', err);
+    req.session.flash_error = 'Failed to upload cover photo.';
   }
 
-  db.prepare('UPDATE users SET cover_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(coverUrl, req.session.userId);
-  req.session.flash_success = 'Cover photo updated.';
   res.redirect('/settings');
 });
 

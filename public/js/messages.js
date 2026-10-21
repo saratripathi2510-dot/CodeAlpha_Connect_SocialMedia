@@ -3,6 +3,9 @@
  * Auto-scroll to bottom, auto-refresh for new messages.
  */
 document.addEventListener('DOMContentLoaded', () => {
+  const API_BASE = (window.API_BASE_URL || document.querySelector('meta[name="api-base-url"]')?.getAttribute('content') || '').replace(/\/$/, '');
+  const apiUrl = (path) => `${API_BASE}${path}`;
+
   const chatBody = document.getElementById('chat-body');
 
   // Scroll to bottom on load
@@ -35,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(async () => {
       try {
         const username = conversationUsername.dataset.username;
-        const res = await fetch(`/messages/${username}?ajax=1&after=${lastMessageId}`, {
+        const res = await fetch(apiUrl(`/messages/${username}?ajax=1&after=${lastMessageId}`), {
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         // We do a full page reload approach for simplicity
